@@ -1,8 +1,8 @@
-# [your app name here]
+# GiftGiver
 
 CodePath WEB103 Final Project
 
-Designed and developed by: [your names here]
+Designed and developed by: Elena Marquez (Group Members did not respond to message)
 
 🔗 Link to deployed app:
 
@@ -10,39 +10,51 @@ Designed and developed by: [your names here]
 
 ### Description and Purpose
 
-[text goes here]
+GiftGiver is a personal gift management database built around the people in your life. Users can add contacts, attach important dates (birthdays, holidays, anniversaries), and build curated gift idea lists for each person. The app tracks upcoming deadlines and budget limits so you're never caught off guard, giving you the tools to be a thoughtful, well-prepared gift giver every time.
 
 ### Inspiration
 
-[text goes here]
+We've all been there - a birthday sneaks up, you panic-buy something generic, and it shows. GiftGiver was inspired by the idea of being a "Mastermind" gift giver: someone who plans ahead, knows what people actually want, and never blows the budget. We wanted to build a tool that makes that level of thoughtfulness easy and systematic, turning gift-giving from a stressful last-minute scramble into something genuinely enjoyable.
 
 ## Tech Stack
 
-Frontend:
+Frontend: React, React Router
 
-Backend:
+Backend: Express.js, PostgreSQL
 
 ## Features
 
-### [Name of Feature 1]
+### Contact Management
 
-[short description goes here]
+Add and manage a personal list of people you buy gifts for, including their name, relationship, and profile details.
 
-[gif goes here]
+### Birthday & Holiday Tracking
 
-### [Name of Feature 2]
+Link specific dates (birthdays, Christmas, anniversaries, etc.) to each contact so the app knows when deadlines are approaching.
 
-[short description goes here]
+### Gift Idea Lists
 
-[gif goes here]
+Build and maintain a curated list of gift ideas for each person, with item names, descriptions, links, and estimated prices.
 
-### [Name of Feature 3]
+### Deadline Reminders
 
-[short description goes here]
+Automatically surface upcoming gift deadlines based on today's date, sorted by urgency so you always know what needs attention first.
 
-[gif goes here]
+### Budget Tracker
 
-### [ADDITIONAL FEATURES GO HERE - ADD ALL FEATURES HERE IN THE FORMAT ABOVE; you will check these off and add gifs as you complete them]
+Set a budget per person or per event and track how much you've allocated across gift ideas, with visual indicators when you're approaching or over budget.
+
+### Gift Status Tracking
+
+Mark gift ideas as "idea", "purchased", or "given" to track where you are in the process for each person and event.
+
+### Search & Filter
+
+Search contacts and gift ideas by name, tag, or date range to quickly find what you need.
+
+### Custom Holiday Support
+
+Add custom recurring or one-time events beyond standard holidays so the app fits your unique gift-giving calendar.
 
 ## Installation Instructions
 

@@ -2,7 +2,7 @@
 
 CodePath WEB103 Final Project
 
-Designed and developed by: Elena Marquez (Group Members did not respond to message)
+Designed and developed by: Elena Marquez, Ethan Resek, and Bethel Zegeye
 
 🔗 Link to deployed app:
 

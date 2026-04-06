@@ -21,7 +21,7 @@ This unit, be sure to complete all tasks listed below. To complete a task, place
 
 ### 1. What went well during this unit?
 
-I was able to clearly define the core concept of GiftGiver and align on the features I want to build. Breaking the app down into contacts, dates, gift lists, and budgets made it easy to write user stories and identify what needs to be designed. The planning process felt smooth and gave a solid foundation to build from.
+We were able to clearly define the core concept of GiftGiver and align on the features we want to build. Breaking the app down into contacts, dates, gift lists, and budgets made it easy to write user stories and identify what needs to be designed. The planning process felt smooth and gave a solid foundation to build from.
 
 ### 2. What were some challenges your group faced in this unit?
 
@@ -29,4 +29,4 @@ Deciding on the feature list was the trickiest part. There are a lot of features
 
 ### 3. What additional support will you need in upcoming units as you continue to work on your final project?
 
-Will likely need support with setting up the PostgreSQL schema for the relational data model, particularly around linking contacts to multiple events and gift ideas.
+We will likely need support with setting up the PostgreSQL schema for the relational data model, particularly around linking contacts to multiple events and gift ideas.

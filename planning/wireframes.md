@@ -19,31 +19,7 @@ The main dashboard view after a user logs in. Displays all upcoming gift-giving 
 - Avatar chips for each gift recipient linked to the event (e.g. JS, ED, MW) with a "+1 more" overflow indicator
 - An "+ Add Event" button in the top right to create a new event
 
-```
-+-------------------------------------------------------+
-| GiftGiver                    Dashboard  Contacts  👤  |
-+-------------------------------------------------------+
-| Event Dashboard                          [+ Add Event]|
-| Track your upcoming gift-giving events                |
-|                                                       |
-| +------------------+  +------------------+           |
-| | [Holiday]        |  | [Holiday]        |           |
-| | [cover image]    |  | [cover image]    |           |
-| | Christmas 2026   |  | Christmas 2026   |           |
-| | 📅 Dec 25, 2026  |  | 📅 Dec 25, 2026  |  (75%)   |
-| | $ $600 / $800    |  | $ $600 / $800    |           |
-| | 👥 JS  ED  MW +1 |  | 👥 JS  ED  MW +1 |           |
-| +------------------+  +------------------+           |
-|                                                       |
-| +------------------+  +------------------+           |
-| | [Holiday]        |  | [Holiday]        |           |
-| | Christmas 2026   |  | Christmas 2026   |           |
-| | 📅 Dec 25, 2026  |  | 📅 Dec 25, 2026  |           |
-| | $ $600 / $800    |  | $ $600 / $800    |           |
-| | 👥 JS  ED  MW +1 |  | 👥 JS  ED  MW +1 |           |
-| +------------------+  +------------------+           |
-+-------------------------------------------------------+
-```
+
 
 ## Wireframe 2: Contact Directory
 
@@ -55,36 +31,7 @@ A full list of all contacts the user is buying gifts for. Each row in the list s
 - Number of gift ideas saved for that contact
 - An "+ Add Contact" button in the top right
 
-```
-+-------------------------------------------------------+
-| GiftGiver                    Dashboard  Contacts  👤  |
-+-------------------------------------------------------+
-| Contact Directory                      [+ Add Contact]|
-| Manage your gift recipients                           |
-|                                                       |
-| +---------------------------------------------------+ |
-| | 👤 Sarah Johnson   📅 Birthday      [Birthday]    | |
-| |    Mother             May 15, 2026  $ $200  🎁 5  | |
-| +---------------------------------------------------+ |
-| | 👤 John Smith      📅 Christmas     [Holiday]     | |
-| |    Best Friend        Dec 25, 2026  $ $350  🎁 8  | |
-| |                       +1 more                     | |
-| +---------------------------------------------------+ |
-| | 👤 Emma Davis      📅 Christmas     [Holiday]     | |
-| |    Sister             Dec 25, 2026  $ $250  🎁 6  | |
-| +---------------------------------------------------+ |
-| | 👤 Robert Johnson  📅 Retirement    [Custom Event]| |
-| |    Father             Aug 20, 2026  $ $300  🎁 4  | |
-| |                       +1 more                     | |
-| +---------------------------------------------------+ |
-| | 👤 Mike Wilson     📅 Christmas     [Holiday]     | |
-| |    Colleague          Dec 25, 2026  $ $100  🎁 3  | |
-| +---------------------------------------------------+ |
-| | 👤 Lisa Brown      📅 Birthday      [Birthday]    | |
-| |    Niece              Jul 12, 2026  $ $180  🎁 7  | |
-| +---------------------------------------------------+ |
-+-------------------------------------------------------+
-```
+
 
 ## Wireframe 3: Create New Event
 
@@ -97,32 +44,4 @@ A form page for creating a new gift-giving event. Fields include:
 - Notes (optional textarea for additional context or early gift ideas)
 - Cancel and Create Event action buttons at the bottom
 
-```
-+-------------------------------------------------------+
-| GiftGiver                    Dashboard  Contacts  👤  |
-+-------------------------------------------------------+
-|                                                       |
-|         Create New Event                              |
-|         Add a new gift-giving event to track          |
-|                                                       |
-|  +-----------------------------------------------+   |
-|  | Event Name                                    |   |
-|  | [e.g., Mom's Birthday, Christmas 2026       ] |   |
-|  |                                               |   |
-|  | Event Type            Event Date             |   |
-|  | [Select type       ▼] [📅 Pick a date      ] |   |
-|  |                                               |   |
-|  | Total Budget                                  |   |
-|  | [$ 0.00                                     ] |   |
-|  |                                               |   |
-|  | Gift Recipients                               |   |
-|  | [Select contacts                            ] |   |
-|  |                                               |   |
-|  | Notes (Optional)                              |   |
-|  | [Add any additional notes or gift ideas...  ] |   |
-|  |                                               ] |   |
-|  +-----------------------------------------------+   |
-|                                                       |
-|                    [Cancel] [Create Event]            |
-+-------------------------------------------------------+
-```
+

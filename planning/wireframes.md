@@ -19,6 +19,7 @@ The main dashboard view after a user logs in. Displays all upcoming gift-giving 
 - Avatar chips for each gift recipient linked to the event (e.g. JS, ED, MW) with a "+1 more" overflow indicator
 - An "+ Add Event" button in the top right to create a new event
 
+<img width="1440" height="1024" alt="Dashboard" src="https://github.com/user-attachments/assets/d61d388e-4fde-4d96-96c7-4d5bc6521ba7" />
 
 
 ## Wireframe 2: Contact Directory
@@ -31,6 +32,7 @@ A full list of all contacts the user is buying gifts for. Each row in the list s
 - Number of gift ideas saved for that contact
 - An "+ Add Contact" button in the top right
 
+<img width="1440" height="1024" alt="Contacts" src="https://github.com/user-attachments/assets/dd76996e-5317-4a6c-b038-e79b3b526f22" />
 
 
 ## Wireframe 3: Create New Event
@@ -44,4 +46,5 @@ A form page for creating a new gift-giving event. Fields include:
 - Notes (optional textarea for additional context or early gift ideas)
 - Cancel and Create Event action buttons at the bottom
 
+<img width="1440" height="1024" alt="Add Event Page" src="https://github.com/user-attachments/assets/6fec2838-c1ff-4cf6-b892-92cad3ba0e0e" />
 

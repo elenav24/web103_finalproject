@@ -2,12 +2,13 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router';
 import { Calendar, DollarSign, Gift, Plus, X } from 'lucide-react';
 import { useApp, Contact, EventType } from '../store';
+import './Contacts.css';
 
-const EVENT_TYPE_BADGE: Record<EventType, string> = {
-  Birthday: 'bg-pink-50 text-pink-700 border-pink-100',
-  Holiday: 'bg-emerald-50 text-emerald-700 border-emerald-100',
-  Anniversary: 'bg-rose-50 text-rose-700 border-rose-100',
-  Custom: 'bg-blue-50 text-blue-700 border-blue-100',
+const EVENT_BADGE_CLASS: Record<EventType, string> = {
+  Birthday: 'birthday',
+  Holiday: 'holiday',
+  Anniversary: 'anniversary',
+  Custom: 'custom',
 };
 
 function getInitials(name: string) {
@@ -52,62 +53,38 @@ function ContactModal({ onClose, editContact }: ContactModalProps) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={onClose}>
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md" onClick={e => e.stopPropagation()}>
-        <div className="p-6 border-b border-gray-100 flex items-center justify-between">
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal-box" onClick={e => e.stopPropagation()}>
+        <div className="modal-header">
           <div>
-            <h2 className="text-[20px] font-semibold text-[#0a0a0a]">{editContact ? 'Edit Contact' : 'Add New Contact'}</h2>
-            <p className="text-[14px] text-[#717182] mt-0.5">Fill in the details to {editContact ? 'update' : 'add'} a contact</p>
+            <h2 className="modal-title">{editContact ? 'Edit Contact' : 'Add New Contact'}</h2>
+            <p className="modal-subtitle">Fill in the details to {editContact ? 'update' : 'add'} a contact</p>
           </div>
-          <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-gray-100 transition-colors">
-            <X size={18} className="text-gray-500" />
-          </button>
+          <button className="modal-close" onClick={onClose}><X size={18} /></button>
         </div>
-        <div className="p-6 flex flex-col gap-4">
-          <div className="flex flex-col gap-2">
-            <label className="text-[14px] font-medium text-[#0a0a0a]">Full Name</label>
-            <input
-              className="bg-[#f3f3f5] rounded-lg px-3 py-2 text-[14px] outline-none focus:ring-2 focus:ring-black/10 placeholder:text-[#717182]"
-              placeholder="e.g., Sarah Johnson"
-              value={name} onChange={e => setName(e.target.value)}
-            />
-            {errors.name && <p className="text-xs text-red-500">{errors.name}</p>}
+        <div className="modal-body">
+          <div className="form-group">
+            <label className="form-label">Full Name</label>
+            <input className="form-input" placeholder="e.g., Sarah Johnson" value={name} onChange={e => setName(e.target.value)} />
+            {errors.name && <p className="form-error">{errors.name}</p>}
           </div>
-          <div className="flex flex-col gap-2">
-            <label className="text-[14px] font-medium text-[#0a0a0a]">Relationship</label>
-            <input
-              className="bg-[#f3f3f5] rounded-lg px-3 py-2 text-[14px] outline-none focus:ring-2 focus:ring-black/10 placeholder:text-[#717182]"
-              placeholder="e.g., Mother, Best Friend, Colleague"
-              value={relationship} onChange={e => setRelationship(e.target.value)}
-            />
-            {errors.relationship && <p className="text-xs text-red-500">{errors.relationship}</p>}
+          <div className="form-group">
+            <label className="form-label">Relationship</label>
+            <input className="form-input" placeholder="e.g., Mother, Best Friend, Colleague" value={relationship} onChange={e => setRelationship(e.target.value)} />
+            {errors.relationship && <p className="form-error">{errors.relationship}</p>}
           </div>
-          <div className="flex flex-col gap-2">
-            <label className="text-[14px] font-medium text-[#0a0a0a]">Email Address</label>
-            <input
-              type="email"
-              className="bg-[#f3f3f5] rounded-lg px-3 py-2 text-[14px] outline-none focus:ring-2 focus:ring-black/10 placeholder:text-[#717182]"
-              placeholder="email@example.com"
-              value={email} onChange={e => setEmail(e.target.value)}
-            />
+          <div className="form-group">
+            <label className="form-label">Email Address</label>
+            <input type="email" className="form-input" placeholder="email@example.com" value={email} onChange={e => setEmail(e.target.value)} />
           </div>
-          <div className="flex flex-col gap-2">
-            <label className="text-[14px] font-medium text-[#0a0a0a]">Phone Number</label>
-            <input
-              type="tel"
-              className="bg-[#f3f3f5] rounded-lg px-3 py-2 text-[14px] outline-none focus:ring-2 focus:ring-black/10 placeholder:text-[#717182]"
-              placeholder="555-0100"
-              value={phone} onChange={e => setPhone(e.target.value)}
-            />
+          <div className="form-group">
+            <label className="form-label">Phone Number</label>
+            <input type="tel" className="form-input" placeholder="555-0100" value={phone} onChange={e => setPhone(e.target.value)} />
           </div>
         </div>
-        <div className="p-6 pt-0 flex justify-end gap-3">
-          <button onClick={onClose} className="px-4 py-2 rounded-lg border border-[rgba(0,0,0,0.1)] text-[14px] font-medium text-[#0a0a0a] hover:bg-gray-50 transition-colors">
-            Cancel
-          </button>
-          <button onClick={handleSubmit} className="px-4 py-2 rounded-lg bg-[#0a0a0a] text-[14px] font-medium text-white hover:bg-[#333] transition-colors">
-            {editContact ? 'Save Changes' : 'Add Contact'}
-          </button>
+        <div className="modal-footer">
+          <button className="btn-cancel" onClick={onClose}>Cancel</button>
+          <button className="btn-primary" onClick={handleSubmit}>{editContact ? 'Save Changes' : 'Add Contact'}</button>
         </div>
       </div>
     </div>
@@ -120,110 +97,83 @@ export default function ContactsPage() {
   const [showModal, setShowModal] = useState(false);
 
   return (
-    <div className="min-h-screen bg-white pt-[60px]">
-      <div className="max-w-[1100px] mx-auto px-8 py-10">
-        <div className="flex items-start justify-between mb-8">
+    <div className="contacts-page">
+      <div className="contacts-inner">
+        <div className="contacts-header">
           <div>
-            <h1 className="text-[30px] font-medium text-[#0a0a0a] tracking-tight">Contact Directory</h1>
-            <p className="text-[16px] text-[#717182] mt-1">Manage your gift recipients and never miss an important occasion</p>
+            <h1 className="contacts-title">Contact Directory</h1>
+            <p className="contacts-subtitle">Manage your gift recipients and never miss an important occasion</p>
           </div>
-          <button
-            onClick={() => setShowModal(true)}
-            className="flex items-center gap-2 px-4 py-2 rounded-full border border-[#0a0a0a] text-[14px] font-medium text-[#0a0a0a] hover:bg-[#0a0a0a] hover:text-white transition-all"
-          >
+          <button className="btn-add" onClick={() => setShowModal(true)}>
             <Plus size={14} />
             Add Contact
           </button>
         </div>
 
         {contacts.length === 0 ? (
-          <div className="text-center py-20 text-[#717182]">
-            <p className="text-[18px] mb-2">No contacts yet</p>
-            <p className="text-[14px]">Click "+ Add Contact" to add your first contact</p>
+          <div className="contacts-empty">
+            <p>No contacts yet</p>
+            <p>Click "+ Add Contact" to add your first contact</p>
           </div>
         ) : (
-          <div className="bg-white rounded-2xl border border-[rgba(0,0,0,0.08)] shadow-[0_2px_12px_rgba(0,0,0,0.05)] overflow-hidden">
-            {contacts.map((contact, idx) => {
+          <div className="contacts-list">
+            {contacts.map(contact => {
               const nextEvent = getNextEventForContact(contact.id);
               const allEvents = getContactEvents(contact.id);
               const totalBudget = getTotalBudgetForContact(contact.id);
               const giftCount = getGiftIdeasCountForContact(contact.id);
-              const avatar = null;
+              const displayEvent = nextEvent ?? allEvents[0] ?? null;
 
               return (
-                <div
-                  key={contact.id}
-                  className={`flex items-center gap-4 px-5 py-4 cursor-pointer hover:bg-[#fafafa] transition-colors ${idx < contacts.length - 1 ? 'border-b border-[rgba(0,0,0,0.06)]' : ''}`}
-                  onClick={() => navigate(`/contacts/${contact.id}`)}
-                >
-                  <div className="size-[44px] rounded-full overflow-hidden flex-shrink-0 bg-[#ececf0] flex items-center justify-center">
-                    {avatar ? (
-                      <img src={avatar} alt={contact.name} className="size-full object-cover" />
-                    ) : (
-                      <span className="text-[14px] font-medium text-[#717182]">{getInitials(contact.name)}</span>
-                    )}
+                <div key={contact.id} className="contact-row" onClick={() => navigate(`/contacts/${contact.id}`)}>
+                  <div className="contact-avatar">
+                    <span>{getInitials(contact.name)}</span>
                   </div>
 
-                  {/* Name + relationship */}
-                  <div className="w-[160px] flex-shrink-0">
-                    <p className="text-[15px] font-medium text-[#0a0a0a]">{contact.name}</p>
-                    <p className="text-[13px] text-[#717182]">{contact.relationship}</p>
+                  <div className="contact-name-col">
+                    <p className="contact-name">{contact.name}</p>
+                    <p className="contact-relationship">{contact.relationship}</p>
                   </div>
 
-                  {/* Next Event */}
-                  <div className="flex-1 min-w-0">
-                    {nextEvent ? (
+                  <div className="contact-event-col">
+                    {displayEvent ? (
                       <div>
-                        <div className="flex items-center gap-1.5">
-                          <Calendar size={13} className="text-[#717182] flex-shrink-0" />
-                          <span className="text-[13px] font-medium text-[#0a0a0a] truncate">{nextEvent.name}</span>
+                        <div className="contact-event-name-row">
+                          <Calendar size={13} color="#717182" />
+                          <span className="contact-event-name">{displayEvent.name}</span>
                         </div>
-                        <p className="text-[12px] text-[#717182] mt-0.5 pl-5">{formatDate(nextEvent.date)}</p>
+                        <p className="contact-event-date">{formatDate(displayEvent.date)}</p>
                         {allEvents.length > 1 && (
-                          <p className="text-[12px] text-[#717182] pl-5">+{allEvents.length - 1} more</p>
-                        )}
-                      </div>
-                    ) : allEvents.length > 0 ? (
-                      <div>
-                        <div className="flex items-center gap-1.5">
-                          <Calendar size={13} className="text-[#717182] flex-shrink-0" />
-                          <span className="text-[13px] font-medium text-[#0a0a0a] truncate">{allEvents[0].name}</span>
-                        </div>
-                        <p className="text-[12px] text-[#717182] mt-0.5 pl-5">{formatDate(allEvents[0].date)}</p>
-                        {allEvents.length > 1 && (
-                          <p className="text-[12px] text-[#717182] pl-5">+{allEvents.length - 1} more</p>
+                          <p className="contact-event-more">+{allEvents.length - 1} more</p>
                         )}
                       </div>
                     ) : (
-                      <span className="text-[13px] text-[#b0b0b8]">No events</span>
+                      <span className="contact-no-events">No events</span>
                     )}
                   </div>
 
-                  {/* Event type badge */}
-                  <div className="w-[110px] flex-shrink-0 flex justify-center">
-                    {(nextEvent || allEvents[0]) && (
-                      <span className={`inline-block px-2.5 py-0.5 rounded-lg text-[12px] font-medium border ${EVENT_TYPE_BADGE[(nextEvent || allEvents[0])!.type]}`}>
-                        {(nextEvent || allEvents[0])!.type}
+                  <div className="contact-badge-col">
+                    {displayEvent && (
+                      <span className={`event-badge ${EVENT_BADGE_CLASS[displayEvent.type]}`}>
+                        {displayEvent.type}
                       </span>
                     )}
                   </div>
 
-                  {/* Budget */}
-                  <div className="w-[130px] flex-shrink-0">
-                    <div className="flex items-center gap-1 text-[#717182]">
+                  <div className="contact-budget-col">
+                    <div className="contact-budget-row">
                       <DollarSign size={14} />
-                      <span className="text-[15px] font-medium text-[#0a0a0a]">${totalBudget.toFixed(2)}</span>
+                      <span className="contact-budget-amount">${totalBudget.toFixed(2)}</span>
                     </div>
-                    <p className="text-[12px] text-[#717182] pl-5">Total budget</p>
+                    <p className="contact-budget-label">Total budget</p>
                   </div>
 
-                  {/* Gift Ideas count */}
-                  <div className="w-[90px] flex-shrink-0 text-right">
-                    <div className="flex items-center justify-end gap-1">
-                      <Gift size={14} className="text-[#717182]" />
-                      <span className="text-[15px] font-medium text-[#0a0a0a]">{giftCount}</span>
+                  <div className="contact-gifts-col">
+                    <div className="contact-gifts-row">
+                      <Gift size={14} color="#717182" />
+                      <span className="contact-gifts-count">{giftCount}</span>
                     </div>
-                    <p className="text-[12px] text-[#717182]">Gift ideas</p>
+                    <p className="contact-gifts-label">Gift ideas</p>
                   </div>
                 </div>
               );
@@ -232,9 +182,7 @@ export default function ContactsPage() {
         )}
       </div>
 
-      {showModal && (
-        <ContactModal onClose={() => setShowModal(false)} />
-      )}
+      {showModal && <ContactModal onClose={() => setShowModal(false)} />}
     </div>
   );
 }

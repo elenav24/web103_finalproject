@@ -24,27 +24,27 @@ Backend: Express.js, PostgreSQL
 
 ## Features
 
-### Contact Management
+### Contact Management ✅
 
 Add and manage a personal list of people you buy gifts for, including their name, relationship, and profile details.
 
-### Birthday & Holiday Tracking
+### Birthday & Holiday Tracking ✅
 
 Link specific dates (birthdays, Christmas, anniversaries, etc.) to each contact so the app knows when deadlines are approaching.
 
-### Gift Idea Lists
+### Gift Idea Lists ✅
 
 Build and maintain a curated list of gift ideas for each person, with item names, descriptions, links, and estimated prices.
 
-### Deadline Reminders
+### Deadline Reminders ✅
 
 Automatically surface upcoming gift deadlines based on today's date, sorted by urgency so you always know what needs attention first.
 
-### Budget Tracker
+### Budget Tracker ✅
 
 Set a budget per person or per event and track how much you've allocated across gift ideas, with visual indicators when you're approaching or over budget.
 
-### Gift Status Tracking
+### Gift Status Tracking 
 
 Mark gift ideas as "idea", "purchased", or "given" to track where you are in the process for each person and event.
 
@@ -52,7 +52,7 @@ Mark gift ideas as "idea", "purchased", or "given" to track where you are in the
 
 Search contacts and gift ideas by name, tag, or date range to quickly find what you need.
 
-### Custom Holiday Support
+### Custom Holiday Support 
 
 Add custom recurring or one-time events beyond standard holidays so the app fits your unique gift-giving calendar.
 

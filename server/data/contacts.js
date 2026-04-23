@@ -1,7 +1,7 @@
 const contactData = [
   {
     id: 1,
-    user_id: 1,
+    user_id: 'firebase_uid_alex_001',
     name: 'Mom (Linda)',
     relationship: 'Parent',
     email: 'linda.thompson@example.com',
@@ -10,7 +10,7 @@ const contactData = [
   },
   {
     id: 2,
-    user_id: 1,
+    user_id: 'firebase_uid_alex_001',
     name: 'Dad (Robert)',
     relationship: 'Parent',
     email: 'robert.thompson@example.com',
@@ -19,7 +19,7 @@ const contactData = [
   },
   {
     id: 3,
-    user_id: 1,
+    user_id: 'firebase_uid_alex_001',
     name: 'Emily Thompson',
     relationship: 'Sister',
     email: 'emily.t@example.com',
@@ -28,7 +28,7 @@ const contactData = [
   },
   {
     id: 4,
-    user_id: 1,
+    user_id: 'firebase_uid_alex_001',
     name: 'Marcus Williams',
     relationship: 'Best Friend',
     email: 'marcus.w@example.com',
@@ -37,7 +37,7 @@ const contactData = [
   },
   {
     id: 5,
-    user_id: 1,
+    user_id: 'firebase_uid_alex_001',
     name: 'Priya Patel',
     relationship: 'Partner',
     email: 'priya.p@example.com',
@@ -46,7 +46,7 @@ const contactData = [
   },
   {
     id: 6,
-    user_id: 2,
+    user_id: 'firebase_uid_jordan_002',
     name: 'Abuela (Rosa)',
     relationship: 'Grandparent',
     email: null,
@@ -55,7 +55,7 @@ const contactData = [
   },
   {
     id: 7,
-    user_id: 2,
+    user_id: 'firebase_uid_jordan_002',
     name: 'Carlos Rivera',
     relationship: 'Brother',
     email: 'carlos.r@example.com',
@@ -64,7 +64,7 @@ const contactData = [
   },
   {
     id: 8,
-    user_id: 2,
+    user_id: 'firebase_uid_jordan_002',
     name: 'Nadia Okafor',
     relationship: 'Friend',
     email: 'nadia.o@example.com',
@@ -73,7 +73,7 @@ const contactData = [
   },
   {
     id: 9,
-    user_id: 3,
+    user_id: 'firebase_uid_sam_003',
     name: 'Wei Chen',
     relationship: 'Parent',
     email: 'wei.chen@example.com',
@@ -82,7 +82,7 @@ const contactData = [
   },
   {
     id: 10,
-    user_id: 3,
+    user_id: 'firebase_uid_sam_003',
     name: 'Lily Nakamura',
     relationship: 'Partner',
     email: 'lily.n@example.com',

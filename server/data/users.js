@@ -1,22 +1,7 @@
 const userData = [
-  {
-    id: 1,
-    name: 'Alex Thompson',
-    email: 'alex@example.com',
-    password: 'password123'
-  },
-  {
-    id: 2,
-    name: 'Jordan Rivera',
-    email: 'jordan@example.com',
-    password: 'password123'
-  },
-  {
-    id: 3,
-    name: 'Sam Chen',
-    email: 'sam@example.com',
-    password: 'password123'
-  }
+  { id: 'firebase_uid_alex_001', name: 'Alex Thompson' },
+  { id: 'firebase_uid_jordan_002', name: 'Jordan Rivera' },
+  { id: 'firebase_uid_sam_003', name: 'Sam Chen' }
 ]
 
 export default userData

@@ -1,13 +1,11 @@
 import express from 'express'
-import path from 'path'
-import { fileURLToPath } from 'url'
 import EventsController from '../controllers/events.js'
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 
 const eventsRouter = express.Router();
 
 eventsRouter.get('/', EventsController.getEvents);
+eventsRouter.post('/', EventsController.createEvent);
+eventsRouter.delete('/:id', EventsController.deleteEvent);
+eventsRouter.patch('/:id', EventsController.updateEvent);
 
 export default eventsRouter

@@ -17,10 +17,8 @@ const createUsersTable = async () => {
     DROP TABLE IF EXISTS users;
 
     CREATE TABLE IF NOT EXISTS users (
-      id SERIAL PRIMARY KEY,
-      name VARCHAR(127) NOT NULL,
-      email VARCHAR(255) UNIQUE NOT NULL,
-      password VARCHAR(255) NOT NULL
+      id VARCHAR(128) PRIMARY KEY,
+      name VARCHAR(127) NOT NULL
     );
   `
 
@@ -39,10 +37,10 @@ const seedUsersTable = async () => {
   try {
     await Promise.all(userData.map((user) => {
       const insertQuery = `
-        INSERT INTO users (id, name, email, password)
-        VALUES ($1, $2, $3, $4);
+        INSERT INTO users (id, name)
+        VALUES ($1, $2);
       `
-      const values = [user.id, user.name, user.email, user.password]
+      const values = [user.id, user.name]
       return pool.query(insertQuery, values)
     }))
     console.log({ message: '✅ users seeded successfully' })
@@ -92,7 +90,7 @@ const createContactsTable = async () => {
   const createTableQuery = `
     CREATE TABLE IF NOT EXISTS contacts (
       id SERIAL PRIMARY KEY,
-      user_id INT NOT NULL,
+      user_id VARCHAR(128) NOT NULL,
       name VARCHAR(127) NOT NULL,
       relationship VARCHAR(63),
       email VARCHAR(255),
@@ -145,7 +143,7 @@ const createEventsTable = async () => {
   const createTableQuery = `
     CREATE TABLE IF NOT EXISTS events (
       id SERIAL PRIMARY KEY,
-      user_id INT NOT NULL,
+      user_id VARCHAR(128) NOT NULL,
       name VARCHAR(255) NOT NULL,
       type_id INT NOT NULL,
       description TEXT,

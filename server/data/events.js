@@ -1,7 +1,7 @@
 const eventData = [
   {
     id: 1,
-    user_id: 1,
+    user_id: 'firebase_uid_alex_001',
     name: 'Mom\'s Birthday',
     type_id: 1,
     description: 'Mom turns 58 this year. Dinner at her favorite Italian place.',
@@ -11,7 +11,7 @@ const eventData = [
   },
   {
     id: 2,
-    user_id: 1,
+    user_id: 'firebase_uid_alex_001',
     name: 'Dad\'s Birthday',
     type_id: 1,
     description: 'Dad turns 60! Milestone birthday, go big.',
@@ -21,7 +21,7 @@ const eventData = [
   },
   {
     id: 3,
-    user_id: 1,
+    user_id: 'firebase_uid_alex_001',
     name: 'Christmas 2026',
     type_id: 2,
     description: 'Family Christmas at Mom and Dad\'s house.',
@@ -31,7 +31,7 @@ const eventData = [
   },
   {
     id: 4,
-    user_id: 1,
+    user_id: 'firebase_uid_alex_001',
     name: 'Anniversary with Priya',
     type_id: 3,
     description: 'Two year anniversary. She mentioned wanting to go stargazing.',
@@ -41,7 +41,7 @@ const eventData = [
   },
   {
     id: 5,
-    user_id: 1,
+    user_id: 'firebase_uid_alex_001',
     name: 'Marcus\'s Birthday',
     type_id: 1,
     description: null,
@@ -51,7 +51,7 @@ const eventData = [
   },
   {
     id: 6,
-    user_id: 1,
+    user_id: 'firebase_uid_alex_001',
     name: 'Emily\'s Graduation',
     type_id: 5,
     description: 'Emily finishes her MBA. Huge deal!',
@@ -61,7 +61,7 @@ const eventData = [
   },
   {
     id: 7,
-    user_id: 2,
+    user_id: 'firebase_uid_jordan_002',
     name: 'Abuela\'s Birthday',
     type_id: 1,
     description: 'Keep it simple and heartfelt. She doesn\'t want a fuss.',
@@ -71,7 +71,7 @@ const eventData = [
   },
   {
     id: 8,
-    user_id: 2,
+    user_id: 'firebase_uid_jordan_002',
     name: 'Carlos\'s Birthday',
     type_id: 1,
     description: 'Carlos turns 25.',
@@ -81,7 +81,7 @@ const eventData = [
   },
   {
     id: 9,
-    user_id: 2,
+    user_id: 'firebase_uid_jordan_002',
     name: 'Christmas 2026',
     type_id: 2,
     description: 'Gift exchange with family and friends.',
@@ -91,7 +91,7 @@ const eventData = [
   },
   {
     id: 10,
-    user_id: 2,
+    user_id: 'firebase_uid_jordan_002',
     name: 'Nadia\'s Housewarming',
     type_id: 11,
     description: 'Nadia just moved into her new apartment downtown.',
@@ -101,7 +101,7 @@ const eventData = [
   },
   {
     id: 11,
-    user_id: 3,
+    user_id: 'firebase_uid_sam_003',
     name: 'Dad\'s Birthday',
     type_id: 1,
     description: 'Dad mentioned wanting new tea sets.',
@@ -111,7 +111,7 @@ const eventData = [
   },
   {
     id: 12,
-    user_id: 3,
+    user_id: 'firebase_uid_sam_003',
     name: 'Valentine\'s Day with Lily',
     type_id: 4,
     description: 'Plan something creative, not just dinner.',
@@ -121,7 +121,7 @@ const eventData = [
   },
   {
     id: 13,
-    user_id: 3,
+    user_id: 'firebase_uid_sam_003',
     name: 'Lily\'s Birthday',
     type_id: 1,
     description: 'She\'s been hinting at a pottery class.',

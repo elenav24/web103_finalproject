@@ -1,0 +1,24 @@
+.page-container {
+  min-height: 100vh;
+  background: white;
+  padding-top: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.page-error {
+  text-align: center;
+}
+
+.page-error h1 {
+  font-size: 30px;
+  font-weight: 600;
+  color: #0a0a0a;
+  margin-bottom: 10px;
+}
+
+.page-error p {
+  font-size: 16px;
+  color: #717182;
+}

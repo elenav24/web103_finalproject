@@ -1,10 +1,23 @@
-import { createBrowserRouter, Outlet } from 'react-router';
+import { Outlet, Navigate } from 'react-router';
 import { Navbar } from './components/Navbar';
+import SignUp from './pages/SignUp';
 import DashboardPage from './pages/Dashboard';
 import ContactsPage from './pages/Contacts';
 import ContactDetailPage from './pages/ContactDetail';
+import { useApp } from './store';
+import './routes.css';
 
-function Root() {
+export function Root() {
+  const { user, loading } = useApp();
+
+  if (loading) {
+    return <div className="page-container">Loading...</div>;
+  }
+
+  if (!user) {
+    return <Navigate to="/signup" replace />;
+  }
+
   return (
     <>
       <Navbar />
@@ -13,26 +26,53 @@ function Root() {
   );
 }
 
-function NotFound() {
+function ProtectedRouteWrapper({ component: Component }: { component: React.ComponentType }) {
+  const { user, loading } = useApp();
+
+  if (loading) {
+    return <div className="page-container">Loading...</div>;
+  }
+
+  if (!user) {
+    return <Navigate to="/signup" replace />;
+  }
+
+  return <Component />;
+}
+
+export function ProtectedDashboard() {
+  return <ProtectedRouteWrapper component={DashboardPage} />;
+}
+
+export function ProtectedContacts() {
+  return <ProtectedRouteWrapper component={ContactsPage} />;
+}
+
+export function ProtectedContactDetail() {
+  return <ProtectedRouteWrapper component={ContactDetailPage} />;
+}
+
+export function SignUpOrDashboard() {
+  const { user, loading } = useApp();
+
+  if (loading) {
+    return <div className="page-container">Loading...</div>;
+  }
+
+  if (user) {
+    return <Navigate to="/home" replace />;
+  }
+
+  return <SignUp />;
+}
+
+export function NotFound() {
   return (
-    <div className="min-h-screen bg-white pt-[60px] flex items-center justify-center">
-      <div className="text-center">
-        <h1 className="text-[30px] font-semibold text-[#0a0a0a] mb-2">Page Not Found</h1>
-        <p className="text-[16px] text-[#717182]">The page you're looking for doesn't exist.</p>
+    <div className="page-container">
+      <div className="page-error">
+        <h1>Page Not Found</h1>
+        <p>The page you're looking for doesn't exist.</p>
       </div>
     </div>
   );
 }
-
-export const router = createBrowserRouter([
-  {
-    path: '/',
-    Component: Root,
-    children: [
-      { index: true, Component: DashboardPage },
-      { path: 'contacts', Component: ContactsPage },
-      { path: 'contacts/:id', Component: ContactDetailPage },
-      { path: '*', Component: NotFound },
-    ],
-  },
-]);

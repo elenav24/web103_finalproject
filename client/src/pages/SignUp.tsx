@@ -24,7 +24,7 @@ export default function SignUp() {
                 <div className="signup-content">
                     <div className="signup-text">
                         <h1 className="signup-title">Plan your gifts and track budget limits with GiftGiver</h1>
-                        <h2 className="signup-subtitle">Put the people in your life first and never give a last-minute gift again!</h2>
+                        <h2 className="signup-subtitle">Put the people in your life first and never buy a last-minute gift again!</h2>
                     </div>
                     <button className="signup-button" onClick={logGoogleUser}>
                         <img src='/google.svg' alt="Google Icon" className="google-icon" />

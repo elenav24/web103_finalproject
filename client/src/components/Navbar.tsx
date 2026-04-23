@@ -1,5 +1,5 @@
 import { Link, useLocation, useNavigate } from 'react-router';
-import './navbar.css';
+import './Navbar.css';
 import { useApp } from '../store';
 import { signOut } from 'firebase/auth';
 import { auth } from '../config/auth';
@@ -29,7 +29,10 @@ export function Navbar() {
             <Link to="/home" className={`navbar-link${isDashboard ? ' active' : ''}`}>Dashboard</Link>
             <Link to="/contacts" className={`navbar-link${isContacts ? ' active' : ''}`}>Contacts</Link>
             <div className="navbar-avatar">
-              <span>{user.displayName?.substring(0, 2).toUpperCase() || 'U'}</span>
+              {user.photoURL
+                ? <img src={user.photoURL} alt="Profile" className="navbar-avatar-img" referrerPolicy="no-referrer" />
+                : <span>{user.displayName ? `${user.displayName.split(' ')[0][0]}${user.displayName.split(' ').at(-1)?.[0] ?? ''}`.toUpperCase() : 'U'}</span>
+              }
             </div>
             <button onClick={handleLogout} className="navbar-logout">
               Logout

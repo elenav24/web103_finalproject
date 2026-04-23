@@ -31,7 +31,7 @@ function ProtectedRouteWrapper({ component: Component }: { component: React.Comp
 
   if (loading) {
     return <div className="page-container">Loading...</div>;
-  }
+  }l
 
   if (!user) {
     return <Navigate to="/signup" replace />;

@@ -178,7 +178,70 @@ export default function DashboardPage() {
   const [showModal, setShowModal] = useState(false);
   const [editingEvent, setEditingEvent] = useState<GiftEvent | null>(null);
 
-  const sortedEvents = [...events].sort((a, b) => a.date.localeCompare(b.date));
+  const todayUTC = new Date().toISOString().split('T')[0];
+  const upcoming = [...events].filter(e => e.date >= todayUTC).sort((a, b) => a.date.localeCompare(b.date));
+  const past = [...events].filter(e => e.date < todayUTC).sort((a, b) => b.date.localeCompare(a.date));
+
+  const renderCard = (event: GiftEvent) => {
+    const spent = getSpentForEvent(event.id);
+    const pct = event.budget > 0 ? (spent / event.budget) * 100 : 0;
+    const eventContacts = contacts.filter(c => event.contactIds.includes(c.id));
+    const shown = eventContacts.slice(0, 2);
+    const extra = eventContacts.length - shown.length;
+    const spentClass = spent > event.budget ? 'over' : spent / event.budget >= 0.8 ? 'warning' : '';
+
+    return (
+      <div
+        key={event.id}
+        className="event-card"
+        onClick={() => { setEditingEvent(event); setShowModal(true); }}
+      >
+        <div className="event-card-image">
+          <img src={EVENT_IMAGES[event.type]} alt={event.type} />
+          <div className="event-card-image-overlay" />
+          <span className="event-type-badge">{event.type}</span>
+        </div>
+        <div className="event-card-body">
+          <div className="event-card-title-row">
+            <div className="event-card-title-wrap">
+              <h3 className="event-card-name">{event.name}</h3>
+              <div className="event-card-date">
+                <Calendar size={13} />
+                <span>{formatDate(event.date)}</span>
+              </div>
+            </div>
+            <CircularProgress percentage={pct} size={56} />
+          </div>
+          <div className="event-card-stats">
+            <div className="event-stat-row">
+              <div className="event-stat-label">
+                <DollarSign size={14} />
+                <span>Budget</span>
+              </div>
+              <span className="event-stat-value">
+                <span className={`budget-spent${spentClass ? ` ${spentClass}` : ''}`}>${spent.toFixed(2)}</span>
+                <span className="budget-total"> / ${event.budget.toFixed(2)}</span>
+              </span>
+            </div>
+            <div className="event-stat-label">
+              <Users size={14} />
+              <span>Contacts</span>
+            </div>
+            <div className="contact-chips">
+              {shown.map(c => (
+                <span key={c.id} className="contact-chip">
+                  <span className="contact-chip-avatar">{getInitials(c.name)}</span>
+                  <span className="contact-chip-name">{c.name}</span>
+                </span>
+              ))}
+              {extra > 0 && <span className="contact-chip-more">+{extra} more</span>}
+              {eventContacts.length === 0 && <span style={{ fontSize: 13, color: '#717182' }}>No recipients</span>}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
 
   return (
     <div className="dashboard-page">
@@ -186,7 +249,7 @@ export default function DashboardPage() {
         <div className="dashboard-header">
           <div>
             <h1 className="dashboard-title">Event Dashboard</h1>
-            <p className="dashboard-subtitle">Track your upcoming gift-giving events and stay within budget</p>
+            <p className="dashboard-subtitle">Track your gift-giving events and stay within budget</p>
           </div>
           <button className="btn-add" onClick={() => { setEditingEvent(null); setShowModal(true); }}>
             <Plus size={14} />
@@ -194,74 +257,26 @@ export default function DashboardPage() {
           </button>
         </div>
 
-        {sortedEvents.length === 0 ? (
+        {events.length === 0 ? (
           <div className="dashboard-empty">
             <p>No events yet</p>
             <p>Click "+ Add Event" to get started</p>
           </div>
         ) : (
-          <div className="event-grid">
-            {sortedEvents.map(event => {
-              const spent = getSpentForEvent(event.id);
-              const pct = event.budget > 0 ? (spent / event.budget) * 100 : 0;
-              const eventContacts = contacts.filter(c => event.contactIds.includes(c.id));
-              const shown = eventContacts.slice(0, 2);
-              const extra = eventContacts.length - shown.length;
-              const spentClass = spent > event.budget ? 'over' : spent / event.budget >= 0.8 ? 'warning' : '';
-
-              return (
-                <div
-                  key={event.id}
-                  className="event-card"
-                  onClick={() => { setEditingEvent(event); setShowModal(true); }}
-                >
-                  <div className="event-card-image">
-                    <img src={EVENT_IMAGES[event.type]} alt={event.type} />
-                    <div className="event-card-image-overlay" />
-                    <span className="event-type-badge">{event.type}</span>
-                  </div>
-                  <div className="event-card-body">
-                    <div className="event-card-title-row">
-                      <div className="event-card-title-wrap">
-                        <h3 className="event-card-name">{event.name}</h3>
-                        <div className="event-card-date">
-                          <Calendar size={13} />
-                          <span>{formatDate(event.date)}</span>
-                        </div>
-                      </div>
-                      <CircularProgress percentage={pct} size={56} />
-                    </div>
-                    <div className="event-card-stats">
-                      <div className="event-stat-row">
-                        <div className="event-stat-label">
-                          <DollarSign size={14} />
-                          <span>Budget</span>
-                        </div>
-                        <span className="event-stat-value">
-                          <span className={`budget-spent${spentClass ? ` ${spentClass}` : ''}`}>${spent.toFixed(2)}</span>
-                          <span className="budget-total"> / ${event.budget.toFixed(2)}</span>
-                        </span>
-                      </div>
-                      <div className="event-stat-label">
-                        <Users size={14} />
-                        <span>Contacts</span>
-                      </div>
-                      <div className="contact-chips">
-                        {shown.map(c => (
-                          <span key={c.id} className="contact-chip">
-                            <span className="contact-chip-avatar">{getInitials(c.name)}</span>
-                            <span className="contact-chip-name">{c.name}</span>
-                          </span>
-                        ))}
-                        {extra > 0 && <span className="contact-chip-more">+{extra} more</span>}
-                        {eventContacts.length === 0 && <span style={{ fontSize: 13, color: '#717182' }}>No recipients</span>}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
+          <>
+            {upcoming.length > 0 && (
+              <div className="dashboard-section">
+                <h2 className="dashboard-section-heading">Upcoming Events</h2>
+                <div className="event-grid">{upcoming.map(renderCard)}</div>
+              </div>
+            )}
+            {past.length > 0 && (
+              <div className="dashboard-section">
+                <h2 className="dashboard-section-heading">Past Events</h2>
+                <div className="event-grid">{past.map(renderCard)}</div>
+              </div>
+            )}
+          </>
         )}
       </div>
 

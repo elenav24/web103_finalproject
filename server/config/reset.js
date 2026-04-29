@@ -80,6 +80,7 @@ const seedEventTypesTable = async () => {
       const values = [eventType.id, eventType.name, eventType.color]
       return pool.query(insertQuery, values)
     }))
+    await pool.query(`SELECT setval('event_types_id_seq', (SELECT MAX(id) FROM event_types))`)
     console.log({ message: '✅ event_types seeded successfully' })
   } catch (err) {
     console.error({ message: 'error seeding event_types', err })

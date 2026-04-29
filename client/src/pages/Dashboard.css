@@ -1,6 +1,6 @@
 .dashboard-page {
   min-height: 100vh;
-  background: #ffffff;
+  background: #FBEFF4;
   padding-top: 60px;
 }
 
@@ -119,8 +119,7 @@
   position: absolute;
   top: 12px;
   right: 12px;
-  background: rgba(255,255,255,0.9);
-  color: #0a0a0a;
+  color: #fff;
   font-size: 11px;
   font-weight: 500;
   padding: 2px 8px;
@@ -526,4 +525,66 @@
   font-weight: 600;
   color: #0a0a0a;
   margin-bottom: 16px;
+}
+
+/* Custom event type creation */
+.btn-create-type {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 6px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  font-size: 12px;
+  color: #6366f1;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.btn-create-type:hover {
+  text-decoration: underline;
+}
+
+.custom-type-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.custom-type-row .form-input {
+  flex: 1;
+  min-width: 160px;
+}
+
+.form-input {
+  width: 50px;
+}
+
+.color-picker {
+  width: 36px;
+  height: 36px;
+  border: none;
+  border-radius: 8px;
+  padding: 2px;
+  cursor: pointer;
+  background: #f3f3f5;
+  flex-shrink: 0;
+}
+
+.color-picker::-webkit-color-swatch-wrapper {
+  padding: 0;
+}
+
+.color-picker::-webkit-color-swatch {
+  border: none;
+  border-radius: 6px;
+}
+
+.form-label-optional {
+  font-size: 12px;
+  font-weight: 400;
+  color: #9ca3af;
 }

@@ -1,15 +1,10 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router';
 import { Calendar, DollarSign, Gift, Plus, X } from 'lucide-react';
-import { useApp, Contact, EventType } from '../store';
+import { toast } from 'sonner';
+import { useApp } from '../useApp';
+import type { Contact } from '../store';
 import './Contacts.css';
-
-const EVENT_BADGE_CLASS: Record<EventType, string> = {
-  Birthday: 'birthday',
-  Holiday: 'holiday',
-  Anniversary: 'anniversary',
-  Custom: 'custom',
-};
 
 function getInitials(name: string) {
   return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
@@ -32,24 +27,33 @@ function ContactModal({ onClose, editContact }: ContactModalProps) {
   const [email, setEmail] = useState(editContact?.email ?? '');
   const [phone, setPhone] = useState(editContact?.phone ?? '');
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [submitting, setSubmitting] = useState(false);
 
   const validate = () => {
     const e: Record<string, string> = {};
     if (!name.trim()) e.name = 'Name is required';
-    if (!relationship.trim()) e.relationship = 'Relationship is required';
     setErrors(e);
     return Object.keys(e).length === 0;
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!validate()) return;
-    const payload = { name: name.trim(), relationship: relationship.trim(), email: email.trim(), phone: phone.trim() };
-    if (editContact) {
-      updateContact(editContact.id, payload);
-    } else {
-      addContact(payload);
+    setSubmitting(true);
+    try {
+      const payload = { name: name.trim(), relationship: relationship.trim(), email: email.trim(), phone: phone.trim() };
+      if (editContact) {
+        await updateContact(editContact.id, payload);
+        toast.success('Contact updated');
+      } else {
+        await addContact(payload);
+        toast.success('Contact added');
+      }
+      onClose();
+    } catch (err) {
+      toast.error((err as Error).message ?? 'Something went wrong');
+    } finally {
+      setSubmitting(false);
     }
-    onClose();
   };
 
   return (
@@ -64,27 +68,26 @@ function ContactModal({ onClose, editContact }: ContactModalProps) {
         </div>
         <div className="modal-body">
           <div className="form-group">
-            <label className="form-label">Full Name</label>
-            <input className="form-input" placeholder="e.g., Sarah Johnson" value={name} onChange={e => setName(e.target.value)} />
+            <label className="form-label">Name</label>
+            <input className="form-input" placeholder="e.g., Sarah Garcia" value={name} onChange={e => setName(e.target.value)} />
             {errors.name && <p className="form-error">{errors.name}</p>}
           </div>
           <div className="form-group">
-            <label className="form-label">Relationship</label>
-            <input className="form-input" placeholder="e.g., Mother, Best Friend, Colleague" value={relationship} onChange={e => setRelationship(e.target.value)} />
-            {errors.relationship && <p className="form-error">{errors.relationship}</p>}
+            <label className="form-label">Relationship <span className="form-label-optional">(Optional)</span></label>
+            <input className="form-input" placeholder="Mother, Best Friend, etc." value={relationship} onChange={e => setRelationship(e.target.value)} />
           </div>
           <div className="form-group">
-            <label className="form-label">Email Address</label>
+            <label className="form-label">Email Address <span className="form-label-optional">(Optional)</span></label>
             <input type="email" className="form-input" placeholder="email@example.com" value={email} onChange={e => setEmail(e.target.value)} />
           </div>
           <div className="form-group">
-            <label className="form-label">Phone Number</label>
-            <input type="tel" className="form-input" placeholder="555-0100" value={phone} onChange={e => setPhone(e.target.value)} />
+            <label className="form-label">Phone Number <span className="form-label-optional">(Optional)</span></label>
+            <input type="tel" className="form-input" placeholder="310-555-5555" value={phone} onChange={e => setPhone(e.target.value)} />
           </div>
         </div>
         <div className="modal-footer">
-          <button className="btn-cancel" onClick={onClose}>Cancel</button>
-          <button className="btn-primary" onClick={handleSubmit}>{editContact ? 'Save Changes' : 'Add Contact'}</button>
+          <button className="btn-cancel" onClick={onClose} disabled={submitting}>Cancel</button>
+          <button className="btn-primary" onClick={handleSubmit} disabled={submitting}>{submitting ? 'Saving…' : editContact ? 'Save Changes' : 'Add Contact'}</button>
         </div>
       </div>
     </div>
@@ -93,7 +96,7 @@ function ContactModal({ onClose, editContact }: ContactModalProps) {
 
 export default function ContactsPage() {
   const navigate = useNavigate();
-  const { contacts, getTotalBudgetForContact, getGiftIdeasCountForContact, getNextEventForContact, getContactEvents } = useApp();
+  const { contacts, eventTypes, getTotalBudgetForContact, getGiftIdeasCountForContact, getNextEventForContact, getContactEvents } = useApp();
   const [showModal, setShowModal] = useState(false);
 
   return (
@@ -154,7 +157,10 @@ export default function ContactsPage() {
 
                   <div className="contact-badge-col">
                     {displayEvent && (
-                      <span className={`event-badge ${EVENT_BADGE_CLASS[displayEvent.type]}`}>
+                      <span
+                        className="event-badge"
+                        style={{ backgroundColor: eventTypes.find(t => t.id === displayEvent.type_id)?.color ?? '#94a3b8' }}
+                      >
                         {displayEvent.type}
                       </span>
                     )}
@@ -163,7 +169,7 @@ export default function ContactsPage() {
                   <div className="contact-budget-col">
                     <div className="contact-budget-row">
                       <DollarSign size={14} />
-                      <span className="contact-budget-amount">${totalBudget.toFixed(2)}</span>
+                      <span className="contact-budget-amount">{totalBudget.toFixed(2)}</span>
                     </div>
                     <p className="contact-budget-label">Total budget</p>
                   </div>

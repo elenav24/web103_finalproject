@@ -388,31 +388,8 @@
   font-weight: 500;
   padding: 2px 8px;
   border-radius: 8px;
-  border: 1px solid;
-}
-
-.event-type-badge.birthday {
-  background: #fdf2f8;
-  color: #be185d;
-  border-color: #fbcfe8;
-}
-
-.event-type-badge.holiday {
-  background: #f0fdf4;
-  color: #15803d;
-  border-color: #bbf7d0;
-}
-
-.event-type-badge.anniversary {
-  background: #fff1f2;
-  color: #be123c;
-  border-color: #fecdd3;
-}
-
-.event-type-badge.custom {
-  background: #eff6ff;
-  color: #1d4ed8;
-  border-color: #bfdbfe;
+  color: #fff;
+  border: none;
 }
 
 .event-row-date {

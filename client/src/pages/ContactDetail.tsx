@@ -1,20 +1,15 @@
 import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router';
-import { ArrowLeft, Edit2, Trash2, Plus, X, ExternalLink, Calendar, DollarSign, Gift, Mail, Phone } from 'lucide-react';
-import { useApp, Contact, GiftEvent, GiftIdea, GiftStatus, EventType } from '../store';
+import { ArrowLeft, Edit2, Trash2, Plus, X, ExternalLink, Calendar, Gift, Mail, Phone, Tag } from 'lucide-react';
+import { toast } from 'sonner';
+import { useApp } from '../useApp';
+import type { Contact, GiftEvent, GiftIdea, GiftStatus } from '../store';
 import './ContactDetail.css';
 
 const STATUS_CLASS: Record<GiftStatus, string> = {
   Idea: 'idea',
   Purchased: 'purchased',
   Given: 'given',
-};
-
-const EVENT_TYPE_CLASS: Record<EventType, string> = {
-  Birthday: 'birthday',
-  Holiday: 'holiday',
-  Anniversary: 'anniversary',
-  Custom: 'custom',
 };
 
 function getInitials(name: string) {
@@ -42,20 +37,34 @@ function GiftIdeaModal({ contactId, events, onClose, editIdea }: GiftIdeaModalPr
   const [eventId, setEventId] = useState(editIdea?.eventId ?? (events[0]?.id ?? ''));
   const [status, setStatus] = useState<GiftStatus>(editIdea?.status ?? 'Idea');
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [submitting, setSubmitting] = useState(false);
 
   const validate = () => {
     const e: Record<string, string> = {};
     if (!name.trim()) e.name = 'Name is required';
-    if (!price || isNaN(Number(price)) || Number(price) < 0) e.price = 'Valid price required';
+    if (!price || isNaN(Number(price)) || Number(price) < 0) e.price = 'Price must be 0 or more';
     setErrors(e);
     return Object.keys(e).length === 0;
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!validate()) return;
-    const payload = { contactId, eventId, name: name.trim(), description: description.trim(), price: Number(price), url: url.trim(), status };
-    if (editIdea) { updateGiftIdea(editIdea.id, payload); } else { addGiftIdea(payload); }
-    onClose();
+    setSubmitting(true);
+    try {
+      const payload = { contactId, eventId, name: name.trim(), description: description.trim(), price: Number(price), url: url.trim(), status };
+      if (editIdea) {
+        await updateGiftIdea(editIdea.id, payload);
+        toast.success('Gift idea updated');
+      } else {
+        await addGiftIdea(payload);
+        toast.success('Gift idea added');
+      }
+      onClose();
+    } catch (err) {
+      toast.error((err as Error).message ?? 'Something went wrong');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -111,8 +120,8 @@ function GiftIdeaModal({ contactId, events, onClose, editIdea }: GiftIdeaModalPr
           )}
         </div>
         <div className="modal-footer">
-          <button className="btn-cancel" onClick={onClose}>Cancel</button>
-          <button className="btn-primary" onClick={handleSubmit}>{editIdea ? 'Save Changes' : 'Add Gift Idea'}</button>
+          <button className="btn-cancel" onClick={onClose} disabled={submitting}>Cancel</button>
+          <button className="btn-primary" onClick={handleSubmit} disabled={submitting}>{submitting ? 'Saving…' : editIdea ? 'Save Changes' : 'Add Gift Idea'}</button>
         </div>
       </div>
     </div>
@@ -126,30 +135,68 @@ interface EventModalProps {
 }
 
 function EventModal({ contactId, onClose, editEvent }: EventModalProps) {
-  const { addEvent, updateEvent } = useApp();
+  const { eventTypes, addEvent, updateEvent, addEventType } = useApp();
+  const defaultTypeId = eventTypes[0]?.id ?? 1;
   const [name, setName] = useState(editEvent?.name ?? '');
-  const [type, setType] = useState<EventType>(editEvent?.type ?? 'Birthday');
+  const [typeId, setTypeId] = useState<number>(editEvent?.type_id ?? defaultTypeId);
   const [date, setDate] = useState(editEvent?.date ?? '');
   const [budget, setBudget] = useState(editEvent ? String(editEvent.budget) : '');
   const [notes, setNotes] = useState(editEvent?.notes ?? '');
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [submitting, setSubmitting] = useState(false);
+
+  // Custom type creation state
+  const [showCustomType, setShowCustomType] = useState(false);
+  const [customTypeName, setCustomTypeName] = useState('');
+  const [customTypeColor, setCustomTypeColor] = useState('#6366f1');
+  const [creatingType, setCreatingType] = useState(false);
 
   const validate = () => {
     const e: Record<string, string> = {};
     if (!name.trim()) e.name = 'Event name is required';
     if (!date) e.date = 'Date is required';
-    if (!budget || isNaN(Number(budget)) || Number(budget) < 0) e.budget = 'Valid budget required';
+    if (budget && (isNaN(Number(budget)) || Number(budget) < 0)) e.budget = 'Budget must be a positive number';
     setErrors(e);
     return Object.keys(e).length === 0;
   };
 
-  const handleSubmit = () => {
+  const handleCreateCustomType = async () => {
+    if (!customTypeName.trim()) return;
+    setCreatingType(true);
+    try {
+      const newType = await addEventType(customTypeName.trim(), customTypeColor);
+      setTypeId(newType.id);
+      setCustomTypeName('');
+      setShowCustomType(false);
+      toast.success(`Event type "${newType.name}" created`);
+    } catch (err) {
+      toast.error((err as Error).message ?? 'Failed to create event type');
+    } finally {
+      setCreatingType(false);
+    }
+  };
+
+  const handleSubmit = async () => {
     if (!validate()) return;
-    const existing = editEvent?.contactIds ?? [];
-    const contactIds = existing.includes(contactId) ? existing : [...existing, contactId];
-    const payload = { name: name.trim(), type, date, budget: Number(budget), contactIds, notes };
-    if (editEvent) { updateEvent(editEvent.id, payload); } else { addEvent(payload); }
-    onClose();
+    setSubmitting(true);
+    try {
+      const existing = editEvent?.contactIds ?? [];
+      const contactIds = existing.includes(contactId) ? existing : [...existing, contactId];
+      const typeName = eventTypes.find((t) => t.id === typeId)?.name ?? '';
+      const payload = { name: name.trim(), type: typeName, type_id: typeId, date, budget: Number(budget), contactIds, notes };
+      if (editEvent) {
+        await updateEvent(editEvent.id, payload);
+        toast.success('Event updated');
+      } else {
+        await addEvent(payload);
+        toast.success('Event created');
+      }
+      onClose();
+    } catch (err) {
+      toast.error((err as Error).message ?? 'Something went wrong');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -171,12 +218,36 @@ function EventModal({ contactId, onClose, editEvent }: EventModalProps) {
           <div className="form-grid-2">
             <div className="form-group">
               <label className="form-label">Event Type</label>
-              <select className="form-select" value={type} onChange={e => setType(e.target.value as EventType)}>
-                <option value="Birthday">Birthday</option>
-                <option value="Holiday">Holiday</option>
-                <option value="Anniversary">Anniversary</option>
-                <option value="Custom">Custom</option>
+              <select className="form-select" value={typeId} onChange={e => setTypeId(Number(e.target.value))}>
+                {eventTypes.map((t) => (
+                  <option key={t.id} value={t.id}>{t.name}</option>
+                ))}
               </select>
+              <button type="button" className="btn-create-type" onClick={() => setShowCustomType(v => !v)}>
+                <Tag size={12} />
+                {showCustomType ? 'Cancel' : 'Create custom type'}
+              </button>
+              {showCustomType && (
+                <div className="custom-type-row">
+                  <input
+                    className="form-input"
+                    placeholder="Type name (e.g. Retirement)"
+                    value={customTypeName}
+                    onChange={e => setCustomTypeName(e.target.value)}
+                    onKeyDown={e => e.key === 'Enter' && handleCreateCustomType()}
+                  />
+                  <input
+                    type="color"
+                    className="color-picker"
+                    value={customTypeColor}
+                    onChange={e => setCustomTypeColor(e.target.value)}
+                    title="Pick a color"
+                  />
+                  <button type="button" className="btn-primary" onClick={handleCreateCustomType} disabled={creatingType || !customTypeName.trim()}>
+                    {creatingType ? '…' : 'Add'}
+                  </button>
+                </div>
+              )}
             </div>
             <div className="form-group">
               <label className="form-label">Date</label>
@@ -185,7 +256,7 @@ function EventModal({ contactId, onClose, editEvent }: EventModalProps) {
             </div>
           </div>
           <div className="form-group">
-            <label className="form-label">Total Budget</label>
+            <label className="form-label">Total Budget <span className="form-label-optional">(Optional)</span></label>
             <div className="form-input-prefix">
               <span className="form-input-prefix-symbol">$</span>
               <input type="number" min="0" step="0.01" className="form-input" placeholder="0.00" value={budget} onChange={e => setBudget(e.target.value)} />
@@ -198,8 +269,8 @@ function EventModal({ contactId, onClose, editEvent }: EventModalProps) {
           </div>
         </div>
         <div className="modal-footer">
-          <button className="btn-cancel" onClick={onClose}>Cancel</button>
-          <button className="btn-primary" onClick={handleSubmit}>{editEvent ? 'Save Changes' : 'Add Event'}</button>
+          <button className="btn-cancel" onClick={onClose} disabled={submitting}>Cancel</button>
+          <button className="btn-primary" onClick={handleSubmit} disabled={submitting}>{submitting ? 'Saving…' : editEvent ? 'Save Changes' : 'Add Event'}</button>
         </div>
       </div>
     </div>
@@ -218,19 +289,27 @@ function EditContactModal({ contact, onClose }: EditContactModalProps) {
   const [email, setEmail] = useState(contact.email);
   const [phone, setPhone] = useState(contact.phone);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [submitting, setSubmitting] = useState(false);
 
   const validate = () => {
     const e: Record<string, string> = {};
     if (!name.trim()) e.name = 'Name is required';
-    if (!relationship.trim()) e.relationship = 'Relationship is required';
     setErrors(e);
     return Object.keys(e).length === 0;
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!validate()) return;
-    updateContact(contact.id, { name: name.trim(), relationship: relationship.trim(), email: email.trim(), phone: phone.trim() });
-    onClose();
+    setSubmitting(true);
+    try {
+      await updateContact(contact.id, { name: name.trim(), relationship: relationship.trim(), email: email.trim(), phone: phone.trim() });
+      toast.success('Contact updated');
+      onClose();
+    } catch (err) {
+      toast.error((err as Error).message ?? 'Failed to update contact');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -245,27 +324,26 @@ function EditContactModal({ contact, onClose }: EditContactModalProps) {
         </div>
         <div className="modal-body">
           <div className="form-group">
-            <label className="form-label">Full Name</label>
+            <label className="form-label">Name</label>
             <input className="form-input" value={name} onChange={e => setName(e.target.value)} />
             {errors.name && <p className="form-error">{errors.name}</p>}
           </div>
           <div className="form-group">
-            <label className="form-label">Relationship</label>
+            <label className="form-label">Relationship <span className="form-label-optional">(Optional)</span></label>
             <input className="form-input" value={relationship} onChange={e => setRelationship(e.target.value)} />
-            {errors.relationship && <p className="form-error">{errors.relationship}</p>}
           </div>
           <div className="form-group">
-            <label className="form-label">Email</label>
+            <label className="form-label">Email <span className="form-label-optional">(Optional)</span></label>
             <input type="email" className="form-input" value={email} onChange={e => setEmail(e.target.value)} />
           </div>
           <div className="form-group">
-            <label className="form-label">Phone</label>
+            <label className="form-label">Phone <span className="form-label-optional">(Optional)</span></label>
             <input type="tel" className="form-input" value={phone} onChange={e => setPhone(e.target.value)} />
           </div>
         </div>
         <div className="modal-footer">
-          <button className="btn-cancel" onClick={onClose}>Cancel</button>
-          <button className="btn-primary" onClick={handleSubmit}>Save Changes</button>
+          <button className="btn-cancel" onClick={onClose} disabled={submitting}>Cancel</button>
+          <button className="btn-primary" onClick={handleSubmit} disabled={submitting}>{submitting ? 'Saving…' : 'Save Changes'}</button>
         </div>
       </div>
     </div>
@@ -311,7 +389,7 @@ function ConfirmDialog({ message, onConfirm, onCancel }: { message: string; onCo
 export default function ContactDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { contacts, events, deleteContact, deleteEvent, updateGiftIdea, deleteGiftIdea, getContactEvents, getContactGiftIdeas, getEventGiftIdeas, getSpentForEvent } = useApp();
+  const { contacts, events, eventTypes, deleteContact, deleteEvent, updateGiftIdea, deleteGiftIdea, getContactEvents, getContactGiftIdeas, getEventGiftIdeas, getSpentForEvent } = useApp();
 
   const contact = contacts.find(c => c.id === id);
   const [showEditContact, setShowEditContact] = useState(false);
@@ -335,10 +413,40 @@ export default function ContactDetailPage() {
   const contactEvents = getContactEvents(contact.id).sort((a, b) => a.date.localeCompare(b.date));
   const contactIdeas = getContactGiftIdeas(contact.id);
 
-  const handleDeleteContact = () => { deleteContact(contact.id); navigate('/contacts'); };
-  const handleDeleteIdea = (ideaId: string) => { deleteGiftIdea(ideaId); setConfirmDelete(null); };
-  const handleDeleteEvent = (eventId: string) => { deleteEvent(eventId); setConfirmDelete(null); };
-  const handleStatusChange = (ideaId: string, status: GiftStatus) => updateGiftIdea(ideaId, { status });
+  const handleDeleteContact = async () => {
+    try {
+      await deleteContact(contact.id);
+      toast.success('Contact deleted');
+      navigate('/contacts');
+    } catch (err) {
+      toast.error((err as Error).message ?? 'Failed to delete contact');
+    }
+  };
+  const handleDeleteIdea = async (ideaId: string) => {
+    try {
+      await deleteGiftIdea(ideaId);
+      toast.success('Gift idea deleted');
+    } catch (err) {
+      toast.error((err as Error).message ?? 'Failed to delete gift idea');
+    }
+    setConfirmDelete(null);
+  };
+  const handleDeleteEvent = async (eventId: string) => {
+    try {
+      await deleteEvent(eventId);
+      toast.success('Event deleted');
+    } catch (err) {
+      toast.error((err as Error).message ?? 'Failed to delete event');
+    }
+    setConfirmDelete(null);
+  };
+  const handleStatusChange = async (ideaId: string, status: GiftStatus) => {
+    try {
+      await updateGiftIdea(ideaId, { status });
+    } catch (err) {
+      toast.error((err as Error).message ?? 'Failed to update status');
+    }
+  };
 
   return (
     <div className="detail-page">
@@ -471,7 +579,10 @@ export default function ContactDetailPage() {
                       <div className="event-row-info">
                         <div className="event-row-name-row">
                           <span className="event-row-name">{event.name}</span>
-                          <span className={`event-type-badge ${EVENT_TYPE_CLASS[event.type]}`}>{event.type}</span>
+                          <span
+                            className="event-type-badge"
+                            style={{ backgroundColor: eventTypes.find(t => t.id === event.type_id)?.color ?? '#94a3b8' }}
+                          >{event.type}</span>
                         </div>
                         <div className="event-row-date">
                           <Calendar size={12} color="#717182" />

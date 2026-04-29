@@ -1,6 +1,6 @@
 import { Link, useLocation, useNavigate } from 'react-router';
 import './Navbar.css';
-import { useApp } from '../store';
+import { useApp } from '../useApp';
 import { signOut } from 'firebase/auth';
 import { auth } from '../config/auth';
 

@@ -1,14 +1,9 @@
 import { useState } from 'react';
-import { Calendar, DollarSign, Users, Plus, X } from 'lucide-react';
-import { useApp, EventType, GiftEvent } from '../store';
+import { Calendar, DollarSign, Users, Plus, X, Tag } from 'lucide-react';
+import { toast } from 'sonner';
+import { useApp } from '../useApp';
+import type { GiftEvent } from '../store';
 import './Dashboard.css';
-
-const EVENT_IMAGES: Record<EventType, string> = {
-  Holiday: 'https://images.unsplash.com/photo-1512389142860-9c449e58a543?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=600',
-  Birthday: 'https://images.unsplash.com/photo-1664289597477-d5b2d266169d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=600',
-  Anniversary: 'https://images.unsplash.com/photo-1674129895589-a70302311f74?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=600',
-  Custom: 'https://images.unsplash.com/photo-1651399973942-1721a0de0851?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=600',
-};
 
 function CircularProgress({ percentage, size = 60 }: { percentage: number; size?: number }) {
   const radius = (size - 8) / 2;
@@ -51,33 +46,72 @@ interface EventModalProps {
 }
 
 function EventModal({ onClose, editEvent }: EventModalProps) {
-  const { contacts, addEvent, updateEvent } = useApp();
+  const { contacts, eventTypes, addEvent, updateEvent, addEventType } = useApp();
+  const defaultTypeId = eventTypes[0]?.id ?? 1;
   const [name, setName] = useState(editEvent?.name ?? '');
-  const [type, setType] = useState<EventType>(editEvent?.type ?? 'Holiday');
+  const [typeId, setTypeId] = useState<number>(editEvent?.type_id ?? defaultTypeId);
   const [date, setDate] = useState(editEvent?.date ?? '');
   const [budget, setBudget] = useState(editEvent ? String(editEvent.budget) : '');
   const [selectedContacts, setSelectedContacts] = useState<string[]>(editEvent?.contactIds ?? []);
   const [notes, setNotes] = useState(editEvent?.notes ?? '');
+  const [imageUrl, setImageUrl] = useState(editEvent?.image_url ?? '');
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [submitting, setSubmitting] = useState(false);
+
+  // Custom type creation state
+  const [showCustomType, setShowCustomType] = useState(false);
+  const [customTypeName, setCustomTypeName] = useState('');
+  const [customTypeColor, setCustomTypeColor] = useState('#6366f1');
+  const [creatingType, setCreatingType] = useState(false);
 
   const validate = () => {
     const e: Record<string, string> = {};
     if (!name.trim()) e.name = 'Event name is required';
     if (!date) e.date = 'Date is required';
-    if (!budget || isNaN(Number(budget)) || Number(budget) < 0) e.budget = 'Valid budget required';
+    if (budget && (isNaN(Number(budget)) || Number(budget) < 0)) e.budget = 'Budget must be a positive number';
     setErrors(e);
     return Object.keys(e).length === 0;
   };
 
-  const handleSubmit = () => {
-    if (!validate()) return;
-    const payload = { name: name.trim(), type, date, budget: Number(budget), contactIds: selectedContacts, notes };
-    if (editEvent) {
-      updateEvent(editEvent.id, payload);
-    } else {
-      addEvent(payload);
+  const handleCreateCustomType = async () => {
+    if (!customTypeName.trim()) return;
+    setCreatingType(true);
+    try {
+      const newType = await addEventType(customTypeName.trim(), customTypeColor);
+      setTypeId(newType.id);
+      setCustomTypeName('');
+      setShowCustomType(false);
+      toast.success(`Event type "${newType.name}" created`);
+    } catch (err) {
+      toast.error((err as Error).message ?? 'Failed to create event type');
+    } finally {
+      setCreatingType(false);
     }
-    onClose();
+  };
+
+  const handleSubmit = async () => {
+    if (!validate()) return;
+    setSubmitting(true);
+    try {
+      const typeName = eventTypes.find((t) => t.id === typeId)?.name ?? '';
+      const payload = {
+        name: name.trim(), type: typeName, type_id: typeId,
+        date, budget: Number(budget), contactIds: selectedContacts,
+        notes, image_url: imageUrl.trim() || undefined,
+      };
+      if (editEvent) {
+        await updateEvent(editEvent.id, payload);
+        toast.success('Event updated');
+      } else {
+        await addEvent(payload);
+        toast.success('Event created');
+      }
+      onClose();
+    } catch (err) {
+      toast.error((err as Error).message ?? 'Something went wrong');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const toggleContact = (id: string) => {
@@ -107,12 +141,45 @@ function EventModal({ onClose, editEvent }: EventModalProps) {
           <div className="form-grid-2">
             <div className="form-group">
               <label className="form-label">Event Type</label>
-              <select className="form-select" value={type} onChange={e => setType(e.target.value as EventType)}>
-                <option value="Birthday">Birthday</option>
-                <option value="Holiday">Holiday</option>
-                <option value="Anniversary">Anniversary</option>
-                <option value="Custom">Custom</option>
+              <select className="form-select" value={typeId} onChange={e => setTypeId(Number(e.target.value))}>
+                {eventTypes.map((t) => (
+                  <option key={t.id} value={t.id}>{t.name}</option>
+                ))}
               </select>
+              <button
+                type="button"
+                className="btn-create-type"
+                onClick={() => setShowCustomType(v => !v)}
+              >
+                <Tag size={12} />
+                {showCustomType ? 'Cancel' : 'Create custom type'}
+              </button>
+              {showCustomType && (
+                <div className="custom-type-row">
+                  <input
+                    className="form-input"
+                    placeholder="Type name"
+                    value={customTypeName}
+                    onChange={e => setCustomTypeName(e.target.value)}
+                    onKeyDown={e => e.key === 'Enter' && handleCreateCustomType()}
+                  />
+                  <input
+                    type="color"
+                    className="color-picker"
+                    value={customTypeColor}
+                    onChange={e => setCustomTypeColor(e.target.value)}
+                    title="Pick a color"
+                  />
+                  <button
+                    type="button"
+                    className="btn-primary"
+                    onClick={handleCreateCustomType}
+                    disabled={creatingType || !customTypeName.trim()}
+                  >
+                    {creatingType ? '…' : 'Add'}
+                  </button>
+                </div>
+              )}
             </div>
             <div className="form-group">
               <label className="form-label">Event Date</label>
@@ -125,7 +192,7 @@ function EventModal({ onClose, editEvent }: EventModalProps) {
             </div>
           </div>
           <div className="form-group">
-            <label className="form-label">Total Budget</label>
+            <label className="form-label">Total Budget <span className="form-label-optional">(Optional)</span></label>
             <div className="form-input-prefix">
               <span className="form-input-prefix-symbol">$</span>
               <input
@@ -153,6 +220,15 @@ function EventModal({ onClose, editEvent }: EventModalProps) {
             </div>
           </div>
           <div className="form-group">
+            <label className="form-label">Image URL (Optional)</label>
+            <input
+              type="url"
+              className="form-input"
+              placeholder="https://..."
+              value={imageUrl} onChange={e => setImageUrl(e.target.value)}
+            />
+          </div>
+          <div className="form-group">
             <label className="form-label">Notes (Optional)</label>
             <textarea
               className="form-textarea"
@@ -163,9 +239,9 @@ function EventModal({ onClose, editEvent }: EventModalProps) {
           </div>
         </div>
         <div className="modal-footer">
-          <button className="btn-cancel" onClick={onClose}>Cancel</button>
-          <button className="btn-primary" onClick={handleSubmit}>
-            {editEvent ? 'Save Changes' : 'Create Event'}
+          <button className="btn-cancel" onClick={onClose} disabled={submitting}>Cancel</button>
+          <button className="btn-primary" onClick={handleSubmit} disabled={submitting}>
+            {submitting ? 'Saving…' : editEvent ? 'Save Changes' : 'Create Event'}
           </button>
         </div>
       </div>
@@ -174,13 +250,13 @@ function EventModal({ onClose, editEvent }: EventModalProps) {
 }
 
 export default function DashboardPage() {
-  const { events, contacts, getSpentForEvent } = useApp();
+  const { events, contacts, eventTypes, getSpentForEvent } = useApp();
   const [showModal, setShowModal] = useState(false);
   const [editingEvent, setEditingEvent] = useState<GiftEvent | null>(null);
 
-  const todayUTC = new Date().toISOString().split('T')[0];
-  const upcoming = [...events].filter(e => e.date >= todayUTC).sort((a, b) => a.date.localeCompare(b.date));
-  const past = [...events].filter(e => e.date < todayUTC).sort((a, b) => b.date.localeCompare(a.date));
+  const today = new Date().toLocaleDateString('en-CA');
+  const upcoming = [...events].filter(e => e.date >= today).sort((a, b) => a.date.localeCompare(b.date));
+  const past = [...events].filter(e => e.date < today).sort((a, b) => b.date.localeCompare(a.date));
 
   const renderCard = (event: GiftEvent) => {
     const spent = getSpentForEvent(event.id);
@@ -189,6 +265,9 @@ export default function DashboardPage() {
     const shown = eventContacts.slice(0, 2);
     const extra = eventContacts.length - shown.length;
     const spentClass = spent > event.budget ? 'over' : spent / event.budget >= 0.8 ? 'warning' : '';
+    const eventType = eventTypes.find(t => t.id === event.type_id);
+    const eventImage = event.image_url ?? 'https://images.unsplash.com/photo-1651399973942-1721a0de0851?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=600';
+    const badgeColor = eventType?.color ?? '#94a3b8';
 
     return (
       <div
@@ -197,9 +276,9 @@ export default function DashboardPage() {
         onClick={() => { setEditingEvent(event); setShowModal(true); }}
       >
         <div className="event-card-image">
-          <img src={EVENT_IMAGES[event.type]} alt={event.type} />
+          <img src={eventImage} alt={event.type} />
           <div className="event-card-image-overlay" />
-          <span className="event-type-badge">{event.type}</span>
+          <span className="event-type-badge" style={{ backgroundColor: badgeColor }}>{event.type}</span>
         </div>
         <div className="event-card-body">
           <div className="event-card-title-row">

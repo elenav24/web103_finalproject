@@ -54,7 +54,8 @@ const createEventTypesTable = async () => {
   const createTableQuery = `
     CREATE TABLE IF NOT EXISTS event_types (
       id SERIAL PRIMARY KEY,
-      name VARCHAR(127) UNIQUE NOT NULL
+      name VARCHAR(127) UNIQUE NOT NULL,
+      color VARCHAR(31) DEFAULT '#94a3b8'
     );
   `
 
@@ -73,10 +74,10 @@ const seedEventTypesTable = async () => {
   try {
     await Promise.all(eventTypeData.map((eventType) => {
       const insertQuery = `
-        INSERT INTO event_types (id, name)
-        VALUES ($1, $2);
+        INSERT INTO event_types (id, name, color)
+        VALUES ($1, $2, $3);
       `
-      const values = [eventType.id, eventType.name]
+      const values = [eventType.id, eventType.name, eventType.color]
       return pool.query(insertQuery, values)
     }))
     console.log({ message: '✅ event_types seeded successfully' })
@@ -132,6 +133,8 @@ const seedContactsTable = async () => {
       ]
       return pool.query(insertQuery, values)
     }))
+    // Reset the sequence so new inserts don't collide with seeded IDs
+    await pool.query(`SELECT setval('contacts_id_seq', (SELECT MAX(id) FROM contacts))`)
     console.log({ message: '✅ contacts seeded successfully' })
   } catch (err) {
     console.error({ message: 'error seeding contacts', err })
@@ -150,6 +153,7 @@ const createEventsTable = async () => {
       date DATE NOT NULL,
       budget DECIMAL(10, 2),
       recurring BOOLEAN DEFAULT false,
+      image_url VARCHAR(512),
 
       FOREIGN KEY (user_id) REFERENCES users(id)
         ON UPDATE CASCADE
@@ -175,8 +179,8 @@ const seedEventsTable = async () => {
   try {
     await Promise.all(eventData.map((event) => {
       const insertQuery = `
-        INSERT INTO events (id, user_id, name, type_id, description, date, budget, recurring)
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8);
+        INSERT INTO events (id, user_id, name, type_id, description, date, budget, recurring, image_url)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9);
       `
       const values = [
         event.id,
@@ -186,10 +190,13 @@ const seedEventsTable = async () => {
         event.description,
         event.date,
         event.budget,
-        event.recurring
+        event.recurring,
+        event.image_url ?? null
       ]
       return pool.query(insertQuery, values)
     }))
+    // Reset sequence so new inserts don't collide with seeded IDs
+    await pool.query(`SELECT setval('events_id_seq', (SELECT MAX(id) FROM events))`)
     console.log({ message: '✅ events seeded successfully' })
   } catch (err) {
     console.error({ message: 'error seeding events', err })
@@ -300,6 +307,8 @@ const seedGiftIdeasTable = async () => {
       ]
       return pool.query(insertQuery, values)
     }))
+    // Reset sequence so new inserts don't collide with seeded IDs
+    await pool.query(`SELECT setval('gift_ideas_id_seq', (SELECT MAX(id) FROM gift_ideas))`)
     console.log({ message: '✅ gift_ideas seeded successfully' })
   } catch (err) {
     console.error({ message: 'error seeding gift_ideas', err })

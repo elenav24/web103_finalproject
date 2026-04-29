@@ -7,7 +7,8 @@ const eventData = [
     description: 'Mom turns 58 this year. Dinner at her favorite Italian place.',
     date: '2026-06-14',
     budget: 150.00,
-    recurring: true
+    recurring: true,
+    image_url: 'https://images.unsplash.com/photo-1664289597477-d5b2d266169d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=600',
   },
   {
     id: 2,
@@ -17,7 +18,8 @@ const eventData = [
     description: 'Dad turns 60! Milestone birthday, go big.',
     date: '2026-09-22',
     budget: 200.00,
-    recurring: true
+    recurring: true,
+    image_url: 'https://images.unsplash.com/photo-1664289597477-d5b2d266169d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=600',
   },
   {
     id: 3,
@@ -27,7 +29,8 @@ const eventData = [
     description: 'Family Christmas at Mom and Dad\'s house.',
     date: '2026-12-25',
     budget: 400.00,
-    recurring: true
+    recurring: true,
+    image_url: 'https://images.unsplash.com/photo-1512389142860-9c449e58a543?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=600',
   },
   {
     id: 4,
@@ -37,7 +40,8 @@ const eventData = [
     description: 'Two year anniversary. She mentioned wanting to go stargazing.',
     date: '2026-08-10',
     budget: 100.00,
-    recurring: true
+    recurring: true,
+    image_url: 'https://images.unsplash.com/photo-1674129895589-a70302311f74?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=600',
   },
   {
     id: 5,
@@ -47,7 +51,8 @@ const eventData = [
     description: null,
     date: '2026-07-03',
     budget: 75.00,
-    recurring: true
+    recurring: true,
+    image_url: 'https://images.unsplash.com/photo-1664289597477-d5b2d266169d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=600',
   },
   {
     id: 6,
@@ -57,7 +62,8 @@ const eventData = [
     description: 'Emily finishes her MBA. Huge deal!',
     date: '2026-05-18',
     budget: 250.00,
-    recurring: false
+    recurring: false,
+    image_url: 'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=600',
   },
   {
     id: 7,
@@ -67,7 +73,8 @@ const eventData = [
     description: 'Keep it simple and heartfelt. She doesn\'t want a fuss.',
     date: '2026-10-05',
     budget: 60.00,
-    recurring: true
+    recurring: true,
+    image_url: 'https://images.unsplash.com/photo-1664289597477-d5b2d266169d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=600',
   },
   {
     id: 8,
@@ -77,7 +84,8 @@ const eventData = [
     description: 'Carlos turns 25.',
     date: '2026-11-12',
     budget: 100.00,
-    recurring: true
+    recurring: true,
+    image_url: 'https://images.unsplash.com/photo-1664289597477-d5b2d266169d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=600',
   },
   {
     id: 9,
@@ -87,7 +95,8 @@ const eventData = [
     description: 'Gift exchange with family and friends.',
     date: '2026-12-25',
     budget: 300.00,
-    recurring: true
+    recurring: true,
+    image_url: 'https://images.unsplash.com/photo-1512389142860-9c449e58a543?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=600',
   },
   {
     id: 10,
@@ -97,7 +106,8 @@ const eventData = [
     description: 'Nadia just moved into her new apartment downtown.',
     date: '2026-06-28',
     budget: 50.00,
-    recurring: false
+    recurring: false,
+    image_url: 'https://images.unsplash.com/photo-1558618047-3c8c76ca7d13?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=600',
   },
   {
     id: 11,
@@ -107,7 +117,8 @@ const eventData = [
     description: 'Dad mentioned wanting new tea sets.',
     date: '2026-08-19',
     budget: 80.00,
-    recurring: true
+    recurring: true,
+    image_url: 'https://images.unsplash.com/photo-1664289597477-d5b2d266169d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=600',
   },
   {
     id: 12,
@@ -117,7 +128,8 @@ const eventData = [
     description: 'Plan something creative, not just dinner.',
     date: '2027-02-14',
     budget: 120.00,
-    recurring: true
+    recurring: true,
+    image_url: 'https://images.unsplash.com/photo-1518199266791-5375a83190b7?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=600',
   },
   {
     id: 13,
@@ -127,8 +139,9 @@ const eventData = [
     description: 'She\'s been hinting at a pottery class.',
     date: '2026-05-30',
     budget: 150.00,
-    recurring: true
-  }
+    recurring: true,
+    image_url: 'https://images.unsplash.com/photo-1664289597477-d5b2d266169d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=600',
+  },
 ]
 
 export default eventData

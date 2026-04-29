@@ -4,7 +4,7 @@ import SignUp from './pages/SignUp';
 import DashboardPage from './pages/Dashboard';
 import ContactsPage from './pages/Contacts';
 import ContactDetailPage from './pages/ContactDetail';
-import { useApp } from './store';
+import { useApp } from './useApp';
 import './routes.css';
 
 export function Root() {
@@ -31,7 +31,7 @@ function ProtectedRouteWrapper({ component: Component }: { component: React.Comp
 
   if (loading) {
     return <div className="page-container">Loading...</div>;
-  }l
+  }
 
   if (!user) {
     return <Navigate to="/signup" replace />;

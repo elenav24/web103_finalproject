@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { createContext, useState, useEffect, useCallback, ReactNode } from 'react';
 import { User, onAuthStateChanged } from 'firebase/auth';
 import { auth } from './config/auth';
 
@@ -11,16 +11,20 @@ export interface Contact {
   relationship: string;
   email: string;
   phone: string;
+  notes?: string;
 }
 
 export interface GiftEvent {
   id: string;
   name: string;
-  type: EventType;
+  type: string;
+  type_id: number;
   date: string;
   budget: number;
   contactIds: string[];
   notes: string;
+  recurring?: boolean;
+  image_url?: string;
 }
 
 export interface GiftIdea {
@@ -34,21 +38,29 @@ export interface GiftIdea {
   status: GiftStatus;
 }
 
+export interface EventTypeOption {
+  id: number;
+  name: string;
+  color: string;
+}
+
 interface AppContextType {
   contacts: Contact[];
   events: GiftEvent[];
   giftIdeas: GiftIdea[];
+  eventTypes: EventTypeOption[];
   user: User | null;
   loading: boolean;
-  addContact: (c: Omit<Contact, 'id'>) => void;
-  updateContact: (id: string, c: Partial<Contact>) => void;
-  deleteContact: (id: string) => void;
-  addEvent: (e: Omit<GiftEvent, 'id'>) => string;
-  updateEvent: (id: string, e: Partial<GiftEvent>) => void;
-  deleteEvent: (id: string) => void;
-  addGiftIdea: (g: Omit<GiftIdea, 'id'>) => void;
-  updateGiftIdea: (id: string, g: Partial<GiftIdea>) => void;
-  deleteGiftIdea: (id: string) => void;
+  addContact: (c: Omit<Contact, 'id'>) => Promise<void>;
+  updateContact: (id: string, c: Partial<Contact>) => Promise<void>;
+  deleteContact: (id: string) => Promise<void>;
+  addEvent: (e: Omit<GiftEvent, 'id'>) => Promise<string>;
+  updateEvent: (id: string, e: Partial<GiftEvent>) => Promise<void>;
+  deleteEvent: (id: string) => Promise<void>;
+  addGiftIdea: (g: Omit<GiftIdea, 'id'>) => Promise<void>;
+  updateGiftIdea: (id: string, g: Partial<GiftIdea>) => Promise<void>;
+  deleteGiftIdea: (id: string) => Promise<void>;
+  addEventType: (name: string, color: string) => Promise<EventTypeOption>;
   getContactEvents: (contactId: string) => GiftEvent[];
   getContactGiftIdeas: (contactId: string) => GiftIdea[];
   getEventGiftIdeas: (eventId: string) => GiftIdea[];
@@ -58,178 +70,359 @@ interface AppContextType {
   getSpentForEvent: (eventId: string) => number;
 }
 
-const AppContext = createContext<AppContextType | null>(null);
+export const AppContext = createContext<AppContextType | null>(null);
 
-const generateId = () => Math.random().toString(36).substring(2, 11) + Date.now().toString(36);
-
-const INITIAL_CONTACTS: Contact[] = [
-  { id: 'c1', name: 'Sarah Johnson', relationship: 'Mother', email: 'sarah.johnson@example.com', phone: '555-0101' },
-  { id: 'c2', name: 'John Smith', relationship: 'Best Friend', email: 'john.smith@example.com', phone: '555-0102' },
-  { id: 'c3', name: 'Emma Davis', relationship: 'Sister', email: 'emma.davis@example.com', phone: '555-0103' },
-  { id: 'c4', name: 'Robert Johnson', relationship: 'Father', email: 'robert.johnson@example.com', phone: '555-0104' },
-  { id: 'c5', name: 'Mike Wilson', relationship: 'Colleague', email: 'mike.wilson@example.com', phone: '555-0105' },
-  { id: 'c6', name: 'Lisa Brown', relationship: 'Niece', email: 'lisa.brown@example.com', phone: '555-0106' },
-];
-
-const INITIAL_EVENTS: GiftEvent[] = [
-  { id: 'e1', name: "Sarah's Birthday", type: 'Birthday', date: '2026-05-15', budget: 200, contactIds: ['c1'], notes: 'Mom loves gardening gifts' },
-  { id: 'e2', name: 'Christmas 2026', type: 'Holiday', date: '2026-12-25', budget: 800, contactIds: ['c2', 'c3', 'c5', 'c6'], notes: 'Family Christmas celebration' },
-  { id: 'e3', name: "Robert's Retirement Party", type: 'Custom', date: '2026-08-20', budget: 250, contactIds: ['c4', 'c1'], notes: 'Dad is retiring after 30 years!' },
-  { id: 'e4', name: "Lisa's Birthday", type: 'Birthday', date: '2026-07-12', budget: 180, contactIds: ['c6'], notes: '' },
-  { id: 'e5', name: "Emma's Anniversary", type: 'Anniversary', date: '2026-09-14', budget: 250, contactIds: ['c3'], notes: '' },
-  { id: 'e6', name: "John's Birthday", type: 'Birthday', date: '2026-03-08', budget: 150, contactIds: ['c2'], notes: '' },
-  { id: 'e7', name: "Robert's Birthday", type: 'Birthday', date: '2026-12-15', budget: 100, contactIds: ['c4'], notes: '' },
-];
-
-const INITIAL_GIFT_IDEAS: GiftIdea[] = [
-  { id: 'g1', contactId: 'c1', eventId: 'e1', name: 'Gardening Kit', description: 'Premium gardening tool set with trowel, pruners, and gloves', price: 65, url: 'https://example.com/garden-kit', status: 'Purchased' },
-  { id: 'g2', contactId: 'c1', eventId: 'e1', name: 'Flower Seed Collection', description: 'Rare heirloom flower seed pack with 20 varieties', price: 25, url: '', status: 'Idea' },
-  { id: 'g3', contactId: 'c1', eventId: 'e1', name: 'Garden Gloves', description: 'Premium leather gardening gloves', price: 35, url: '', status: 'Idea' },
-  { id: 'g4', contactId: 'c1', eventId: 'e3', name: 'Family Photo Album', description: 'Custom printed family photo book as a gift for the party', price: 45, url: 'https://example.com/photobook', status: 'Idea' },
-  { id: 'g5', contactId: 'c1', eventId: 'e1', name: 'Italian Cookbook', description: 'Authentic Italian cooking cookbook, hardcover', price: 30, url: '', status: 'Given' },
-  { id: 'g6', contactId: 'c2', eventId: 'e2', name: 'Wireless Headphones', description: 'Sony WH-1000XM5 noise-cancelling headphones', price: 80, url: 'https://example.com/headphones', status: 'Purchased' },
-  { id: 'g7', contactId: 'c2', eventId: 'e2', name: 'Coffee Subscription', description: '3-month specialty coffee subscription box', price: 50, url: '', status: 'Idea' },
-  { id: 'g8', contactId: 'c2', eventId: 'e2', name: 'Strategy Board Game', description: 'Catan deluxe edition', price: 45, url: '', status: 'Idea' },
-  { id: 'g9', contactId: 'c2', eventId: 'e6', name: 'Whiskey Tasting Set', description: 'Premium whiskey sampler with 6 mini bottles', price: 60, url: '', status: 'Given' },
-  { id: 'g10', contactId: 'c2', eventId: 'e2', name: 'Smart Watch Band', description: 'Apple Watch sport band, ocean blue', price: 40, url: '', status: 'Idea' },
-  { id: 'g11', contactId: 'c2', eventId: 'e6', name: 'Running Shoes', description: 'Nike Pegasus training shoes', price: 35, url: '', status: 'Purchased' },
-  { id: 'g12', contactId: 'c2', eventId: 'e2', name: 'Sci-Fi Book Set', description: 'Dune trilogy hardcover collection', price: 25, url: '', status: 'Idea' },
-  { id: 'g13', contactId: 'c2', eventId: 'e2', name: 'BBQ Grilling Kit', description: 'Stainless steel BBQ accessories 10-piece set', price: 15, url: '', status: 'Idea' },
-  { id: 'g14', contactId: 'c3', eventId: 'e2', name: 'Luxury Skincare Set', description: 'La Mer moisturizing gift collection', price: 60, url: '', status: 'Purchased' },
-  { id: 'g15', contactId: 'c3', eventId: 'e2', name: 'Cashmere Scarf', description: 'Soft cashmere winter scarf in blush pink', price: 45, url: '', status: 'Idea' },
-  { id: 'g16', contactId: 'c3', eventId: 'e5', name: 'Engraved Jewelry Box', description: 'Wooden jewelry box with custom engraving', price: 50, url: '', status: 'Idea' },
-  { id: 'g17', contactId: 'c3', eventId: 'e2', name: 'Premium Wine Set', description: 'Curated selection of 3 Italian red wines', price: 55, url: '', status: 'Idea' },
-  { id: 'g18', contactId: 'c3', eventId: 'e5', name: 'Spa Day Voucher', description: 'Full day spa treatment at The Spa Collection', price: 25, url: '', status: 'Idea' },
-  { id: 'g19', contactId: 'c3', eventId: 'e2', name: 'Book Club Subscription', description: '2-month Bookly subscription service', price: 15, url: '', status: 'Idea' },
-  { id: 'g20', contactId: 'c4', eventId: 'e3', name: 'Golf Club Set', description: 'Callaway beginner golf set with bag', price: 120, url: '', status: 'Idea' },
-  { id: 'g21', contactId: 'c4', eventId: 'e3', name: 'Engraved Wristwatch', description: 'Classic Seiko watch with retirement engraving', price: 95, url: 'https://example.com/watch', status: 'Purchased' },
-  { id: 'g22', contactId: 'c4', eventId: 'e7', name: 'Professional Fishing Rod', description: 'Shimano spinning rod and reel combo', price: 55, url: '', status: 'Idea' },
-  { id: 'g23', contactId: 'c4', eventId: 'e7', name: 'Retirement Reading Set', description: 'Collection of 5 bestselling non-fiction books', price: 30, url: '', status: 'Idea' },
-  { id: 'g24', contactId: 'c5', eventId: 'e2', name: 'Bamboo Desk Organizer', description: 'Eco-friendly desk organizer with pen holder', price: 35, url: '', status: 'Idea' },
-  { id: 'g25', contactId: 'c5', eventId: 'e2', name: 'Gourmet Coffee Sampler', description: 'Specialty coffee from 5 different countries', price: 40, url: '', status: 'Purchased' },
-  { id: 'g26', contactId: 'c5', eventId: 'e2', name: 'Leather Journal Set', description: 'A5 leather journal with premium pen', price: 25, url: '', status: 'Idea' },
-  { id: 'g27', contactId: 'c6', eventId: 'e4', name: 'Watercolor Art Set', description: 'Professional 48-color watercolor paint set', price: 35, url: '', status: 'Idea' },
-  { id: 'g28', contactId: 'c6', eventId: 'e4', name: 'Fantasy Book Series', description: 'Mistborn trilogy hardcover set', price: 25, url: 'https://example.com/books', status: 'Purchased' },
-  { id: 'g29', contactId: 'c6', eventId: 'e2', name: 'School Backpack', description: 'JanSport 25L backpack in teal', price: 40, url: '', status: 'Idea' },
-  { id: 'g30', contactId: 'c6', eventId: 'e4', name: 'Family Board Game', description: 'Ticket to Ride Europe edition', price: 30, url: '', status: 'Idea' },
-  { id: 'g31', contactId: 'c6', eventId: 'e2', name: 'Amazon Gift Card', description: '$20 Amazon digital gift card', price: 20, url: '', status: 'Idea' },
-  { id: 'g32', contactId: 'c6', eventId: 'e4', name: 'DIY Jewelry Kit', description: 'Bracelet and necklace making craft kit', price: 20, url: '', status: 'Idea' },
-  { id: 'g33', contactId: 'c6', eventId: 'e4', name: 'Kids Wireless Headphones', description: 'JLab JBuddies volume-safe headphones', price: 10, url: '', status: 'Idea' },
-];
-
-const STORAGE_KEY = 'giftgiver_data';
-
-function loadFromStorage(): { contacts: Contact[]; events: GiftEvent[]; giftIdeas: GiftIdea[] } | null {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (raw) return JSON.parse(raw);
-  } catch {}
-  return null;
+async function getToken(): Promise<string> {
+  const token = await auth.currentUser?.getIdToken();
+  if (!token) throw new Error('Not authenticated');
+  return token;
 }
 
-function saveToStorage(data: { contacts: Contact[]; events: GiftEvent[]; giftIdeas: GiftIdea[] }) {
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-  } catch {}
+async function apiFetch(path: string, options: RequestInit = {}) {
+  const token = await getToken();
+  const res = await fetch(path, {
+    ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+      ...(options.headers ?? {}),
+    },
+  });
+
+  if (res.status === 401 && auth.currentUser) {
+    const freshToken = await auth.currentUser.getIdToken(true);
+    const retry = await fetch(path, {
+      ...options,
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${freshToken}`,
+        ...(options.headers ?? {}),
+      },
+    });
+    if (!retry.ok) {
+      const body = await retry.json().catch(() => ({}));
+      throw new Error(body.error ?? `Request failed: ${retry.status}`);
+    }
+    return retry.json();
+  }
+
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    throw new Error(body.error ?? `Request failed: ${res.status}`);
+  }
+  return res.json();
+}
+
+function rowToContact(row: Record<string, unknown>): Contact {
+  return {
+    id: String(row.id),
+    name: row.name as string,
+    relationship: (row.relationship as string) ?? '',
+    email: (row.email as string) ?? '',
+    phone: (row.phone_number as string) ?? '',
+    notes: (row.notes as string) ?? '',
+  };
+}
+
+function rowToEvent(row: Record<string, unknown>, contactIds: string[] = []): GiftEvent {
+  return {
+    id: String(row.id),
+    name: row.name as string,
+    type: (row.event_type ?? row.type) as string,
+    type_id: row.type_id as number,
+    date: (row.date as string).split('T')[0],
+    budget: Number(row.budget ?? 0),
+    contactIds,
+    notes: (row.description as string) ?? '',
+    recurring: (row.recurring as boolean) ?? false,
+    image_url: (row.image_url as string) ?? undefined,
+  };
+}
+
+function rowToGiftIdea(row: Record<string, unknown>): GiftIdea {
+  const statusMap: Record<string, GiftStatus> = {
+    idea: 'Idea',
+    purchased: 'Purchased',
+    given: 'Given',
+  };
+  return {
+    id: String(row.id),
+    contactId: String(row.contact_id),
+    eventId: row.event_id ? String(row.event_id) : '',
+    name: row.name as string,
+    description: (row.description as string) ?? '',
+    price: Number(row.price ?? 0),
+    url: (row.url as string) ?? '',
+    status: statusMap[(row.status as string)?.toLowerCase()] ?? 'Idea',
+  };
 }
 
 export function AppProvider({ children }: { children: ReactNode }) {
-  const stored = loadFromStorage();
-  const [contacts, setContacts] = useState<Contact[]>(stored?.contacts ?? INITIAL_CONTACTS);
-  const [events, setEvents] = useState<GiftEvent[]>(stored?.events ?? INITIAL_EVENTS);
-  const [giftIdeas, setGiftIdeas] = useState<GiftIdea[]>(stored?.giftIdeas ?? INITIAL_GIFT_IDEAS);
+  const [contacts, setContacts] = useState<Contact[]>([]);
+  const [events, setEvents] = useState<GiftEvent[]>([]);
+  const [giftIdeas, setGiftIdeas] = useState<GiftIdea[]>([]);
+  const [eventTypes, setEventTypes] = useState<EventTypeOption[]>([]);
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
-      setUser(firebaseUser);
-      setLoading(false);
-    });
-    return unsubscribe;
+  const loadUserData = useCallback(async (uid: string) => {
+    try {
+      const [contactRows, eventRows, giftRows] = await Promise.all([
+        apiFetch('/api/contacts'),
+        apiFetch('/api/events'),
+        apiFetch('/api/gifts'),
+      ]);
+
+      if (auth.currentUser?.uid !== uid) return;
+
+      const mappedContacts: Contact[] = contactRows.map(rowToContact);
+      const mappedEvents: GiftEvent[] = eventRows.map((r: Record<string, unknown>) => rowToEvent(r));
+      const mappedGifts: GiftIdea[] = giftRows.map(rowToGiftIdea);
+
+      const contactEventPairs: { contactId: string; eventId: string }[] = [];
+      await Promise.all(
+        mappedContacts.map(async (c) => {
+          try {
+            const evRows: Record<string, unknown>[] = await apiFetch(`/api/contacts/${c.id}/events`);
+            evRows.forEach((ev) => {
+              if (ev.id) contactEventPairs.push({ contactId: c.id, eventId: String(ev.id) });
+            });
+          } catch {
+            // contact has no events
+          }
+        })
+      );
+
+      if (auth.currentUser?.uid !== uid) return;
+
+      const eventsWithContacts = mappedEvents.map((ev) => ({
+        ...ev,
+        contactIds: contactEventPairs
+          .filter((p) => p.eventId === ev.id)
+          .map((p) => p.contactId),
+      }));
+
+      setContacts(mappedContacts);
+      setEvents(eventsWithContacts);
+      setGiftIdeas(mappedGifts);
+    } catch (err) {
+      console.error('Failed to load user data:', err);
+    }
   }, []);
 
   useEffect(() => {
-    saveToStorage({ contacts, events, giftIdeas });
-  }, [contacts, events, giftIdeas]);
+    fetch('/api/event-types')
+      .then((r) => r.json())
+      .then((rows: EventTypeOption[]) => setEventTypes(rows))
+      .catch(console.error);
+  }, []);
 
-  const addContact = (c: Omit<Contact, 'id'>) =>
-    setContacts(prev => [...prev, { ...c, id: generateId() }]);
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+      setUser(firebaseUser);
+      if (firebaseUser) {
+        try {
+          const token = await firebaseUser.getIdToken();
+          await fetch('/api/users', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+            body: JSON.stringify({ name: firebaseUser.displayName ?? firebaseUser.email ?? 'User' }),
+          });
+        } catch {
+          // user already exists
+        }
+        await loadUserData(firebaseUser.uid);
+      } else {
+        setContacts([]);
+        setEvents([]);
+        setGiftIdeas([]);
+      }
+      setLoading(false);
+    });
+    return unsubscribe;
+  }, [loadUserData]);
 
-  const updateContact = (id: string, c: Partial<Contact>) =>
-    setContacts(prev => prev.map(x => x.id === id ? { ...x, ...c } : x));
-
-  const deleteContact = (id: string) => {
-    setContacts(prev => prev.filter(x => x.id !== id));
-    setEvents(prev => prev.map(e => ({ ...e, contactIds: e.contactIds.filter(cid => cid !== id) })));
-    setGiftIdeas(prev => prev.filter(g => g.contactId !== id));
+  const addContact = async (c: Omit<Contact, 'id'>) => {
+    const row = await apiFetch('/api/contacts', {
+      method: 'POST',
+      body: JSON.stringify({
+        name: c.name,
+        relationship: c.relationship,
+        email: c.email,
+        phone_number: c.phone,
+        notes: c.notes ?? '',
+      }),
+    });
+    setContacts((prev) => [...prev, rowToContact(row)]);
   };
 
-  const addEvent = (e: Omit<GiftEvent, 'id'>) => {
-    const id = generateId();
-    setEvents(prev => [...prev, { ...e, id }]);
-    return id;
+  const updateContact = async (id: string, c: Partial<Contact>) => {
+    const current = contacts.find((x) => x.id === id)!;
+    const merged = { ...current, ...c };
+    const row = await apiFetch(`/api/contacts/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify({
+        name: merged.name,
+        relationship: merged.relationship,
+        email: merged.email,
+        phone_number: merged.phone,
+        notes: merged.notes ?? '',
+      }),
+    });
+    setContacts((prev) => prev.map((x) => (x.id === id ? rowToContact(row) : x)));
   };
 
-  const updateEvent = (id: string, e: Partial<GiftEvent>) =>
-    setEvents(prev => prev.map(x => x.id === id ? { ...x, ...e } : x));
-
-  const deleteEvent = (id: string) => {
-    setEvents(prev => prev.filter(x => x.id !== id));
-    setGiftIdeas(prev => prev.map(g => g.eventId === id ? { ...g, eventId: '' } : g));
+  const deleteContact = async (id: string) => {
+    await apiFetch(`/api/contacts/${id}`, { method: 'DELETE' });
+    setContacts((prev) => prev.filter((x) => x.id !== id));
+    setEvents((prev) =>
+      prev.map((e) => ({ ...e, contactIds: e.contactIds.filter((cid) => cid !== id) }))
+    );
+    setGiftIdeas((prev) => prev.filter((g) => g.contactId !== id));
   };
 
-  const addGiftIdea = (g: Omit<GiftIdea, 'id'>) =>
-    setGiftIdeas(prev => [...prev, { ...g, id: generateId() }]);
+  const addEvent = async (e: Omit<GiftEvent, 'id'>): Promise<string> => {
+    const row = await apiFetch('/api/events', {
+      method: 'POST',
+      body: JSON.stringify({
+        name: e.name,
+        type_id: e.type_id,
+        description: e.notes,
+        date: e.date,
+        budget: e.budget,
+        recurring: e.recurring ?? false,
+        image_url: e.image_url ?? null,
+        contact_ids: e.contactIds.map(Number),
+      }),
+    });
+    const newEvent = rowToEvent(row, e.contactIds);
+    setEvents((prev) => [...prev, newEvent]);
+    return newEvent.id;
+  };
 
-  const updateGiftIdea = (id: string, g: Partial<GiftIdea>) =>
-    setGiftIdeas(prev => prev.map(x => x.id === id ? { ...x, ...g } : x));
+  const updateEvent = async (id: string, e: Partial<GiftEvent>) => {
+    const current = events.find((x) => x.id === id)!;
+    const merged = { ...current, ...e };
+    const row = await apiFetch(`/api/events/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify({
+        name: merged.name,
+        type_id: merged.type_id,
+        description: merged.notes,
+        date: merged.date,
+        budget: merged.budget,
+        recurring: merged.recurring ?? false,
+        image_url: merged.image_url ?? null,
+        contact_ids: merged.contactIds.map(Number),
+      }),
+    });
+    setEvents((prev) =>
+      prev.map((x) => (x.id === id ? rowToEvent(row, merged.contactIds) : x))
+    );
+  };
 
-  const deleteGiftIdea = (id: string) =>
-    setGiftIdeas(prev => prev.filter(x => x.id !== id));
+  const deleteEvent = async (id: string) => {
+    await apiFetch(`/api/events/${id}`, { method: 'DELETE' });
+    setEvents((prev) => prev.filter((x) => x.id !== id));
+    setGiftIdeas((prev) => prev.map((g) => (g.eventId === id ? { ...g, eventId: '' } : g)));
+  };
+
+  const addGiftIdea = async (g: Omit<GiftIdea, 'id'>) => {
+    const row = await apiFetch('/api/gifts', {
+      method: 'POST',
+      body: JSON.stringify({
+        contact_id: Number(g.contactId),
+        event_id: g.eventId ? Number(g.eventId) : null,
+        name: g.name,
+        description: g.description,
+        url: g.url,
+        price: g.price,
+        status: g.status.toLowerCase(),
+      }),
+    });
+    setGiftIdeas((prev) => [...prev, rowToGiftIdea(row)]);
+  };
+
+  const updateGiftIdea = async (id: string, g: Partial<GiftIdea>) => {
+    const current = giftIdeas.find((x) => x.id === id)!;
+    const merged = { ...current, ...g };
+    const row = await apiFetch(`/api/gifts/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify({
+        name: merged.name,
+        description: merged.description,
+        url: merged.url,
+        price: merged.price,
+        status: merged.status.toLowerCase(),
+      }),
+    });
+    setGiftIdeas((prev) => prev.map((x) => (x.id === id ? rowToGiftIdea(row) : x)));
+  };
+
+  const deleteGiftIdea = async (id: string) => {
+    await apiFetch(`/api/gifts/${id}`, { method: 'DELETE' });
+    setGiftIdeas((prev) => prev.filter((x) => x.id !== id));
+  };
+
+  const addEventType = async (name: string, color: string): Promise<EventTypeOption> => {
+    const token = await getToken();
+    const res = await fetch('/api/event-types', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ name, color }),
+    });
+    if (!res.ok) {
+      const body = await res.json().catch(() => ({}));
+      throw new Error(body.error ?? 'Failed to create event type');
+    }
+    const row: EventTypeOption = await res.json();
+    setEventTypes((prev) => {
+      const exists = prev.find((t) => t.id === row.id);
+      return exists ? prev.map((t) => (t.id === row.id ? row : t)) : [...prev, row];
+    });
+    return row;
+  };
 
   const getContactEvents = (contactId: string) =>
-    events.filter(e => e.contactIds.includes(contactId)).sort((a, b) => a.date.localeCompare(b.date));
+    events.filter((e) => e.contactIds.includes(contactId)).sort((a, b) => a.date.localeCompare(b.date));
 
   const getContactGiftIdeas = (contactId: string) =>
-    giftIdeas.filter(g => g.contactId === contactId);
+    giftIdeas.filter((g) => g.contactId === contactId);
 
   const getEventGiftIdeas = (eventId: string) =>
-    giftIdeas.filter(g => g.eventId === eventId);
+    giftIdeas.filter((g) => g.eventId === eventId);
 
   const getTotalBudgetForContact = (contactId: string) =>
-    giftIdeas.filter(g => g.contactId === contactId).reduce((sum, g) => sum + g.price, 0);
+    giftIdeas.filter((g) => g.contactId === contactId).reduce((sum, g) => sum + g.price, 0);
 
   const getGiftIdeasCountForContact = (contactId: string) =>
-    giftIdeas.filter(g => g.contactId === contactId).length;
+    giftIdeas.filter((g) => g.contactId === contactId).length;
 
   const getNextEventForContact = (contactId: string): GiftEvent | null => {
-    const today = new Date().toISOString().split('T')[0];
+    const today = new Date().toLocaleDateString('en-CA');
     const upcoming = events
-      .filter(e => e.contactIds.includes(contactId) && e.date >= today)
+      .filter((e) => e.contactIds.includes(contactId) && e.date >= today)
       .sort((a, b) => a.date.localeCompare(b.date));
     return upcoming[0] ?? null;
   };
 
   const getSpentForEvent = (eventId: string) =>
-    giftIdeas.filter(g => g.eventId === eventId).reduce((sum, g) => sum + g.price, 0);
+    giftIdeas.filter((g) => g.eventId === eventId).reduce((sum, g) => sum + g.price, 0);
 
   return (
-    <AppContext.Provider value={{
-      contacts, events, giftIdeas, user, loading,
-      addContact, updateContact, deleteContact,
-      addEvent, updateEvent, deleteEvent,
-      addGiftIdea, updateGiftIdea, deleteGiftIdea,
-      getContactEvents, getContactGiftIdeas, getEventGiftIdeas,
-      getTotalBudgetForContact, getGiftIdeasCountForContact, getNextEventForContact, getSpentForEvent,
-    }}>
+    <AppContext.Provider
+      value={{
+        contacts, events, giftIdeas, eventTypes, user, loading,
+        addContact, updateContact, deleteContact,
+        addEvent, updateEvent, deleteEvent,
+        addGiftIdea, updateGiftIdea, deleteGiftIdea,
+        addEventType,
+        getContactEvents, getContactGiftIdeas, getEventGiftIdeas,
+        getTotalBudgetForContact, getGiftIdeasCountForContact,
+        getNextEventForContact, getSpentForEvent,
+      }}
+    >
       {children}
     </AppContext.Provider>
   );
-}
-
-export function useApp() {
-  const ctx = useContext(AppContext);
-  if (!ctx) throw new Error('useApp must be used within AppProvider');
-  return ctx;
 }

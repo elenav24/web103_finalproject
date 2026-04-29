@@ -4,7 +4,7 @@
   left: 0;
   right: 0;
   z-index: 50;
-  background: #0a0a0a;
+  background: #9C528B;
   height: 60px;
   display: flex;
   align-items: center;
@@ -30,7 +30,7 @@
 .navbar-link {
   font-size: 14px;
   font-weight: 500;
-  color: #a1a1aa;
+  color: #D1DADB;
   text-decoration: none;
   transition: color 0.15s;
 }
@@ -65,7 +65,7 @@
 .navbar-logout {
   font-size: 14px;
   font-weight: 500;
-  color: #a1a1aa;
+  color: #D1DADB;
   background: none;
   border: none;
   cursor: pointer;

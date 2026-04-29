@@ -1,11 +1,11 @@
 .contacts-page {
   min-height: 100vh;
-  background: #ffffff;
+  background: #FBEFF4;
   padding-top: 60px;
 }
 
 .contacts-inner {
-  max-width: 1100px;
+  max-width: 1200px;
   margin: 0 auto;
   padding: 40px 32px;
 }
@@ -162,31 +162,8 @@
   border-radius: 8px;
   font-size: 12px;
   font-weight: 500;
-  border: 1px solid;
-}
-
-.event-badge.birthday {
-  background: #fdf2f8;
-  color: #be185d;
-  border-color: #fbcfe8;
-}
-
-.event-badge.holiday {
-  background: #f0fdf4;
-  color: #15803d;
-  border-color: #bbf7d0;
-}
-
-.event-badge.anniversary {
-  background: #fff1f2;
-  color: #be123c;
-  border-color: #fecdd3;
-}
-
-.event-badge.custom {
-  background: #eff6ff;
-  color: #1d4ed8;
-  border-color: #bfdbfe;
+  color: #fff;
+  border: none;
 }
 
 .contact-budget-col {
@@ -210,20 +187,19 @@
 .contact-budget-label {
   font-size: 12px;
   color: #717182;
-  padding-left: 20px;
+  padding-left: 18px;
 }
 
 .contact-gifts-col {
   width: 90px;
   flex-shrink: 0;
-  text-align: right;
 }
 
 .contact-gifts-row {
   display: flex;
   align-items: center;
-  justify-content: flex-end;
   gap: 4px;
+  color: #717182;
 }
 
 .contact-gifts-count {
@@ -235,6 +211,7 @@
 .contact-gifts-label {
   font-size: 12px;
   color: #717182;
+  padding-left: 18px;
 }
 
 .modal-overlay {

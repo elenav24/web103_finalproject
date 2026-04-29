@@ -2,11 +2,12 @@
 
 ## List of Tables
 
-- **User** — stores registered user accounts
-- **Event** — gift-giving occasions created by a user
-- **EventType** — lookup table for event type categories
-- **Contact** — people the user knows and buys gifts for
-- **GiftIdea** — individual gift ideas assigned to a contact
+- **users** — stores registered user accounts (authenticated via Firebase)
+- **event_types** — lookup table for event type categories
+- **events** — gift-giving occasions created by a user
+- **contacts** — people the user knows and buys gifts for
+- **event_contacts** — join table linking events to contacts (many-to-many)
+- **gift_ideas** — individual gift ideas assigned to a contact and optionally an event
 
 ## Entity Relationship Diagram
 
@@ -14,46 +15,72 @@
 
 ## Table Definitions
 
-### User
+### users
 
-| Column Name | Type    | Description                        |
-|-------------|---------|------------------------------------|
-| id          | integer | primary key                        |
-| name        | string  | user's display name                |
-| email       | string  | unique login email (alternate key) |
-| password    | string  | hashed password                    |
+| Column Name | Type         | Constraints             | Description                              |
+|-------------|--------------|-------------------------|------------------------------------------|
+| id          | VARCHAR(128) | PRIMARY KEY             | Firebase UID                             |
+| name        | VARCHAR(127) | NOT NULL                | user's display name                      |
 
-### Event
+### event_types
 
-| Column Name | Type     | Description                                      |
-|-------------|----------|--------------------------------------------------|
-| id          | integer  | primary key                                      |
-| name        | string   | event name, part of composite alternate key      |
-| type        | integer  | foreign key → EventType.id                       |
-| description | string   | optional description of the event                |
-| date        | datetime | event date, part of composite alternate key      |
+| Column Name | Type         | Constraints             | Description                              |
+|-------------|--------------|-------------------------|------------------------------------------|
+| id          | SERIAL       | PRIMARY KEY             | auto-incrementing integer                |
+| name        | VARCHAR(127) | UNIQUE, NOT NULL        | event type label (e.g. "Birthday")       |
+| color       | VARCHAR(31)  | DEFAULT '#94a3b8'       | hex color used for UI badges             |
 
-### EventType
+### events
 
-| Column Name | Type    | Description                        |
-|-------------|---------|------------------------------------|
-| id          | integer | primary key                        |
-| name        | string  | unique event type name (alternate key) |
+| Column Name | Type           | Constraints                          | Description                              |
+|-------------|----------------|--------------------------------------|------------------------------------------|
+| id          | SERIAL         | PRIMARY KEY                          | auto-incrementing integer                |
+| user_id     | VARCHAR(128)   | NOT NULL, FK → users.id              | owning user                              |
+| name        | VARCHAR(255)   | NOT NULL                             | event name                               |
+| type_id     | INT            | NOT NULL, FK → event_types.id        | event category                           |
+| description | TEXT           |                                      | optional notes about the event           |
+| date        | DATE           | NOT NULL                             | date of the event                        |
+| budget      | DECIMAL(10,2)  |                                      | total spending budget                    |
+| recurring   | BOOLEAN        | DEFAULT false                        | whether the event repeats annually       |
+| image_url   | VARCHAR(512)   |                                      | custom cover image URL for this event    |
 
-### Contact
+### contacts
 
-| Column Name  | Type    | Description                              |
-|--------------|---------|------------------------------------------|
-| id           | integer | primary key                              |
-| name         | string  | contact's full name                      |
-| relationship | string  | e.g. Mother, Best Friend, Colleague      |
-| email        | string  | contact's email (alternate key)          |
-| phone number | string  | contact's phone number (alternate key)   |
+| Column Name  | Type         | Constraints             | Description                              |
+|--------------|--------------|-------------------------|------------------------------------------|
+| id           | SERIAL       | PRIMARY KEY             | auto-incrementing integer                |
+| user_id      | VARCHAR(128) | NOT NULL, FK → users.id | owning user                              |
+| name         | VARCHAR(127) | NOT NULL                | contact's name                           |
+| relationship | VARCHAR(63)  |                         | e.g. Mother, Best Friend, Colleague      |
+| email        | VARCHAR(255) |                         | contact's email address                  |
+| phone_number | VARCHAR(31)  |                         | contact's phone number                   |
+| notes        | TEXT         |                         | freeform notes about the contact         |
 
-### GiftIdea
+### event_contacts
 
-| Column Name | Type   | Description                                      |
-|-------------|--------|--------------------------------------------------|
-| id          | integer | primary key                                     |
-| name        | string  | name of the gift idea                           |
-| status      | coded   | coded value e.g. 'idea', 'purchased', 'given'   |
+| Column Name | Type | Constraints                                        | Description                    |
+|-------------|------|----------------------------------------------------|--------------------------------|
+| event_id    | INT  | NOT NULL, FK → events.id, part of composite PK     | linked event                   |
+| contact_id  | INT  | NOT NULL, FK → contacts.id, part of composite PK   | linked contact                 |
+
+### gift_ideas
+
+| Column Name | Type          | Constraints                   | Description                                    |
+|-------------|---------------|-------------------------------|------------------------------------------------|
+| id          | SERIAL        | PRIMARY KEY                   | auto-incrementing integer                      |
+| contact_id  | INT           | NOT NULL, FK → contacts.id    | contact this gift is for                       |
+| event_id    | INT           | FK → events.id                | event this gift is linked to (optional)        |
+| name        | VARCHAR(255)  | NOT NULL                      | name of the gift idea                          |
+| description | TEXT          |                               | optional description                           |
+| url         | VARCHAR(512)  |                               | link to product page                           |
+| price       | DECIMAL(10,2) |                               | estimated price                                |
+| status      | GIFT_STATUS   | DEFAULT 'idea'                | enum: 'idea', 'purchased', 'given'             |
+
+## Relationships
+
+- **users** → **events**: one-to-many (a user owns many events)
+- **users** → **contacts**: one-to-many (a user owns many contacts)
+- **events** ↔ **contacts**: many-to-many via **event_contacts**
+- **event_types** → **events**: one-to-many (an event type applies to many events)
+- **contacts** → **gift_ideas**: one-to-many (a contact has many gift ideas)
+- **events** → **gift_ideas**: one-to-many (an event has many gift ideas, nullable)

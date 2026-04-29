@@ -1,13 +1,15 @@
 import express from 'express'
-import path from 'path'
-import { fileURLToPath } from 'url'
 import ContactsController from '../controllers/contacts.js'
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+import { verifyToken } from '../middleware/auth.js'
 
 const contactsRouter = express.Router();
 
-contactsRouter.get('/', ContactsController.getContacts);
+contactsRouter.use(verifyToken);
 
-export default contactsRouter
+contactsRouter.get('/', ContactsController.getContacts);
+contactsRouter.post('/', ContactsController.createContact);
+contactsRouter.patch('/:id', ContactsController.updateContact);
+contactsRouter.delete('/:id', ContactsController.deleteContact);
+contactsRouter.get('/:id/events', ContactsController.getContactEvents);
+
+export default contactsRouter;

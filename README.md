@@ -2,7 +2,7 @@
 
 CodePath WEB103 Final Project
 
-Designed and developed by: Elena Marquez, Ethan Resek, and Bethel Zegeye
+Designed and developed by: Elena Marquez and Ethan Resek
 
 🔗 Link to deployed app:
 
@@ -54,17 +54,17 @@ Set a budget per person or per event and track how much you've allocated across 
 
 <img width="400" height="260" alt="Screen Recording 2026-04-22 at 3 39 10 PM" src="https://github.com/user-attachments/assets/6edd6631-fc42-4377-b15d-f14f0ba06097" />
 
-### Gift Status Tracking 
+### Gift Status Tracking ✅
 
 Mark gift ideas as "idea", "purchased", or "given" to track where you are in the process for each person and event.
+
+### Custom Holiday Support ✅
+
+Add custom event types beyond standard holidays so the app fits your unique gift-giving calendar.
 
 ### Search & Filter
 
 Search contacts and gift ideas by name, tag, or date range to quickly find what you need.
-
-### Custom Holiday Support 
-
-Add custom recurring or one-time events beyond standard holidays so the app fits your unique gift-giving calendar.
 
 ## Installation Instructions
 

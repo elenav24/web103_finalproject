@@ -58,9 +58,13 @@ Set a budget per person or per event and track how much you've allocated across 
 
 Mark gift ideas as "idea", "purchased", or "given" to track where you are in the process for each person and event.
 
+<img width="400" height="224" alt="Screen Recording 2026-04-28 at 11 52 49 PM" src="https://github.com/user-attachments/assets/75afa477-74d8-43f4-9140-84e5e5eaab78" />
+
 ### Custom Holiday Support ✅
 
 Add custom event types beyond standard holidays so the app fits your unique gift-giving calendar.
+
+<img width="400" height="224" alt="Screen Recording 2026-04-28 at 11 57 26 PM" src="https://github.com/user-attachments/assets/fa72fe5f-ec08-4ff2-a199-1a39c10fe784" />
 
 ### Search & Filter
 

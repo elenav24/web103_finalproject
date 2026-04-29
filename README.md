@@ -4,7 +4,7 @@ CodePath WEB103 Final Project
 
 Designed and developed by: Elena Marquez and Ethan Resek
 
-🔗 Link to deployed app:
+🔗 Link to deployed app: [giftgiver.dev](https://giftgiver.dev/)
 
 ## About
 
